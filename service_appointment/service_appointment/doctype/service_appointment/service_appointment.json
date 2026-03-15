@@ -1,0 +1,607 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2020-12-15 09:04:09.019889",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "status",
+  "appointment_status",
+  "column_break_3",
+  "team",
+  "required_members",
+  "assigned_members",
+  "section_break_3",
+  "customer",
+  "contact_person",
+  "mobile_no",
+  "column_break_8",
+  "customer_address",
+  "address_display",
+  "column_break_11",
+  "date",
+  "time",
+  "duration",
+  "sales_order",
+  "sales_order_item",
+  "completed_by_section",
+  "completed_by",
+  "other_members",
+  "section_break_16",
+  "items",
+  "section_break_18",
+  "sales_person",
+  "payment_status",
+  "column_break_20",
+  "total_amount",
+  "collect_amount",
+  "contract_details_section",
+  "appointment_order",
+  "service_contract",
+  "location",
+  "visit_details",
+  "service_details_section",
+  "service_type",
+  "building_type",
+  "column_break_17",
+  "pest_type",
+  "notes",
+  "section_break_19",
+  "area_type",
+  "column_break_21",
+  "size",
+  "column_break_23",
+  "qty",
+  "column_break_25",
+  "control_type",
+  "column_break_27",
+  "description",
+  "column_break_29",
+  "add_update",
+  "section_break_31",
+  "service_area_html",
+  "service_area_json",
+  "actual_time_section",
+  "start_time",
+  "column_break_15",
+  "end_time",
+  "column_break_42",
+  "actual_duration",
+  "section_break_17",
+  "services_provided",
+  "column_break_49",
+  "raw_material_used_section",
+  "used_materials",
+  "payment_section",
+  "mode_of_payment",
+  "column_break_26",
+  "received_amount",
+  "section_break_55",
+  "reason_of_incompletion",
+  "remarks",
+  "customer_name",
+  "customer_mobile",
+  "signature",
+  "attachment",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "SA-.YYYY.-.MM.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "SA-.YYYY.-.MM.-"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_filter": 1,
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nDraft\nSubmitted\nCancelled",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_preview": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "customer",
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address Display",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "read_only_depends_on": "eval:doc.appointment_status != \"\""
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Int",
+   "label": "Duration (In Minutes)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.docstatus!==0",
+   "fieldname": "actual_time_section",
+   "fieldtype": "Section Break",
+   "label": "Actual Time"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "services_provided",
+   "fieldtype": "Table MultiSelect",
+   "label": "Services Provided",
+   "options": "Service Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.docstatus!==0",
+   "fieldname": "raw_material_used_section",
+   "fieldtype": "Section Break",
+   "label": "Raw Material Used"
+  },
+  {
+   "depends_on": "eval:doc.docstatus!==0",
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode Of Payment",
+   "options": "Mode of Payment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_26",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "label": "Team",
+   "options": "Team",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order_item",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Sales Order Item",
+   "options": "Sales Order Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "service_details_section",
+   "fieldtype": "Section Break",
+   "label": "Service Details"
+  },
+  {
+   "fieldname": "service_type",
+   "fieldtype": "Link",
+   "label": "Service Type",
+   "options": "Service Type"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pest_type",
+   "fieldtype": "Table MultiSelect",
+   "label": "Pest Type",
+   "options": "Pest Type Item"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "area_type",
+   "fieldtype": "Link",
+   "label": "Area Type",
+   "options": "Area Type"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "label": "Size",
+   "options": "Small\nMedium\nLarge\nExtra Large"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "default": "1",
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "label": "Qty"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "control_type",
+   "fieldtype": "Table MultiSelect",
+   "label": "Control Type",
+   "options": "Control Type Item"
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.docstatus==0",
+   "fieldname": "add_update",
+   "fieldtype": "Button",
+   "label": "Update"
+  },
+  {
+   "fieldname": "section_break_31",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "service_area_html",
+   "fieldtype": "HTML",
+   "label": "Service Area HTML"
+  },
+  {
+   "default": "[]",
+   "fieldname": "service_area_json",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "label": "Service Area JSON"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "customer",
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "customer",
+   "fieldname": "customer_address",
+   "fieldtype": "Link",
+   "label": "Customer Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "section_break_16",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Service Appointment Item"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Sales Person"
+  },
+  {
+   "fieldname": "column_break_42",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "actual_duration",
+   "fieldtype": "Int",
+   "label": "Actual Duration",
+   "read_only": 1
+  },
+  {
+   "default": "Yes",
+   "fieldname": "collect_amount",
+   "fieldtype": "Select",
+   "label": "Collect Amount",
+   "options": "Yes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.docstatus!==0",
+   "fieldname": "section_break_55",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Customer Signature"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "received_amount",
+   "fieldtype": "Currency",
+   "label": "Received Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "used_materials",
+   "fieldtype": "Table",
+   "label": "Used Materials",
+   "options": "Raw Material Item"
+  },
+  {
+   "fieldname": "building_type",
+   "fieldtype": "Link",
+   "label": "Building Type",
+   "options": "Building Type"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Service Appointment",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "appointment_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Appointment Status",
+   "options": "\nScheduled\nIn Progress\nCompleted\nPartially Completed\nReschedule\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason_of_incompletion",
+   "fieldtype": "Link",
+   "label": "Reason of Incompletion",
+   "options": "Reason of Incompletion"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach Image",
+   "label": "Attachment"
+  },
+  {
+   "depends_on": "eval:doc.service_type == 'Contract' || doc.service_contract",
+   "fieldname": "contract_details_section",
+   "fieldtype": "Section Break",
+   "label": "Contract Details"
+  },
+  {
+   "fieldname": "service_contract",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Service Contract",
+   "options": "Service Contract"
+  },
+  {
+   "fieldname": "visit_details",
+   "fieldtype": "Small Text",
+   "label": "Visit Details"
+  },
+  {
+   "fieldname": "appointment_order",
+   "fieldtype": "Data",
+   "label": "Appointment Order"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "Paid\nPending"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "customer_primary_contact.mobile_no",
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mobile No"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "completed_by_section",
+   "fieldtype": "Section Break",
+   "label": "Completed By"
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Completed By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "other_members",
+   "fieldtype": "Table",
+   "label": "Other Members",
+   "options": "Team Member"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "customer_mobile",
+   "fieldtype": "Data",
+   "label": "Customer Mobile"
+  },
+  {
+   "default": "1",
+   "fieldname": "required_members",
+   "fieldtype": "Int",
+   "label": "Required Members"
+  },
+  {
+   "fieldname": "assigned_members",
+   "fieldtype": "Table",
+   "label": "Assigned Members",
+   "options": "Team Member"
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-03-12 11:36:14.897012",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Service Appointment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Service Team",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_preview_popup": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1
+}

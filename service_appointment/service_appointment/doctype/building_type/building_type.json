@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "name:building_type",
+ "creation": "2020-09-20 10:28:39.154668",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "building_type",
+  "default_areas"
+ ],
+ "fields": [
+  {
+   "fieldname": "building_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Building Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_areas",
+   "fieldtype": "Table",
+   "hidden": 1,
+   "label": "Default Areas",
+   "options": "Area Type Item"
+  }
+ ],
+ "links": [],
+ "modified": "2022-07-19 16:32:46.842769",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Building Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

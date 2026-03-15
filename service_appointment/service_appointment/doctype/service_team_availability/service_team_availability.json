@@ -1,0 +1,231 @@
+{
+ "actions": [],
+ "creation": "2020-11-13 12:27:30.260386",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "team",
+  "availability_hours_section",
+  "hour_00",
+  "hour_01",
+  "hour_02",
+  "hour_03",
+  "hour_04",
+  "hour_05",
+  "hour_06",
+  "hour_07",
+  "hour_08",
+  "hour_09",
+  "hour_10",
+  "hour_11",
+  "column_break_16",
+  "hour_12",
+  "hour_13",
+  "hour_14",
+  "hour_15",
+  "hour_16",
+  "hour_17",
+  "hour_18",
+  "hour_19",
+  "hour_20",
+  "hour_21",
+  "hour_22",
+  "hour_23"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Team",
+   "options": "Team",
+   "reqd": 1
+  },
+  {
+   "fieldname": "availability_hours_section",
+   "fieldtype": "Section Break",
+   "label": "Availability Hours"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_00",
+   "fieldtype": "Check",
+   "label": "00"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_01",
+   "fieldtype": "Check",
+   "label": "01"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_02",
+   "fieldtype": "Check",
+   "label": "02"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_03",
+   "fieldtype": "Check",
+   "label": "03"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_04",
+   "fieldtype": "Check",
+   "label": "04"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_05",
+   "fieldtype": "Check",
+   "label": "05"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_06",
+   "fieldtype": "Check",
+   "label": "06"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_07",
+   "fieldtype": "Check",
+   "label": "07"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_08",
+   "fieldtype": "Check",
+   "label": "08"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_09",
+   "fieldtype": "Check",
+   "label": "09"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_10",
+   "fieldtype": "Check",
+   "label": "10"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_11",
+   "fieldtype": "Check",
+   "label": "11"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_12",
+   "fieldtype": "Check",
+   "label": "12"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_13",
+   "fieldtype": "Check",
+   "label": "13"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_14",
+   "fieldtype": "Check",
+   "label": "14"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_15",
+   "fieldtype": "Check",
+   "label": "15"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_16",
+   "fieldtype": "Check",
+   "label": "16"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_17",
+   "fieldtype": "Check",
+   "label": "17"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_18",
+   "fieldtype": "Check",
+   "label": "18"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_19",
+   "fieldtype": "Check",
+   "label": "19"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_20",
+   "fieldtype": "Check",
+   "label": "20"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_21",
+   "fieldtype": "Check",
+   "label": "21"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_22",
+   "fieldtype": "Check",
+   "label": "22"
+  },
+  {
+   "default": "0",
+   "fieldname": "hour_23",
+   "fieldtype": "Check",
+   "label": "23"
+  }
+ ],
+ "links": [],
+ "modified": "2020-11-13 12:28:25.262485",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Service Team Availability",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "date",
+ "track_changes": 1
+}

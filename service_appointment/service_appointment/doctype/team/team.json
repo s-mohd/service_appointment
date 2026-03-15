@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:team_name",
+ "creation": "2020-11-14 08:52:36.746595",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "team_name",
+  "team_leader",
+  "team_members",
+  "column_break_4",
+  "team_vehicle",
+  "team_color",
+  "team_services"
+ ],
+ "fields": [
+  {
+   "fieldname": "team_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Team Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "team_leader",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Team Leader",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team_vehicle",
+   "fieldtype": "Link",
+   "label": "Team Vehicle",
+   "options": "Vehicle"
+  },
+  {
+   "fieldname": "team_color",
+   "fieldtype": "Color",
+   "label": "Team Color"
+  },
+  {
+   "fieldname": "team_services",
+   "fieldtype": "Table MultiSelect",
+   "label": "Team Services",
+   "options": "Team Service"
+  },
+  {
+   "fieldname": "team_members",
+   "fieldtype": "Table MultiSelect",
+   "label": "Team Members",
+   "options": "Team Member"
+  }
+ ],
+ "links": [],
+ "modified": "2020-11-14 10:10:39.222006",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Team",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

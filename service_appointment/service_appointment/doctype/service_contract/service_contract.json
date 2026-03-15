@@ -1,0 +1,279 @@
+{
+ "actions": [],
+ "autoname": "SC-.YYYY.-.###",
+ "creation": "2020-12-15 09:04:10.842183",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "customer_address",
+  "address_display",
+  "location",
+  "column_break_4",
+  "customer_type",
+  "service_contract_template",
+  "section_break_7",
+  "periodicity",
+  "notes",
+  "column_break_9",
+  "no_of_visits",
+  "column_break_11",
+  "start_date",
+  "column_break_13",
+  "end_date",
+  "contract_status",
+  "contract_items_section",
+  "contract_services",
+  "total_price",
+  "visits_schedule_section",
+  "generate_schedule",
+  "regenerate_schedule",
+  "visits_schedule",
+  "first_payment_date",
+  "second_payment_date",
+  "third_payment",
+  "fourth_payment",
+  "extra_visits_section",
+  "extra_visits",
+  "amended_from",
+  "payment_and_notes"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Customer Type",
+   "options": "\nCash\nPrepaid\nCredit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "service_contract_template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service Contract Template",
+   "options": "Service Contract Template",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "service_contract_template.periodicity",
+   "fieldname": "periodicity",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Periodicity",
+   "options": "\nWeekly\nMonthly\nQuarterly\nHalf Yearly\nYearly\nRandom",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "service_contract_template.no_of_visits",
+   "fieldname": "no_of_visits",
+   "fieldtype": "Int",
+   "label": "No. of Visits",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contract_items_section",
+   "fieldtype": "Section Break",
+   "label": "Contract Items"
+  },
+  {
+   "fieldname": "total_price",
+   "fieldtype": "Currency",
+   "label": "Total Price",
+   "read_only": 1
+  },
+  {
+   "fieldname": "visits_schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Visits Schedule"
+  },
+  {
+   "depends_on": "eval:doc.docstatus == 0",
+   "fieldname": "generate_schedule",
+   "fieldtype": "Button",
+   "label": "Generate Schedule"
+  },
+  {
+   "fieldname": "visits_schedule",
+   "fieldtype": "Table",
+   "label": "Visits Schedule",
+   "options": "Service Contract Visit"
+  },
+  {
+   "fieldname": "contract_services",
+   "fieldtype": "Table",
+   "label": "Contract Services",
+   "options": "Service Contract Item",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 4,
+   "fieldname": "customer_address",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer Address",
+   "options": "Address"
+  },
+  {
+   "columns": 4,
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address Display",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Service Contract",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "service_contract.notes",
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "default": "Inactive",
+   "fieldname": "contract_status",
+   "fieldtype": "Select",
+   "label": "Contract Status",
+   "options": "Inactive\nActive\nExpired\nTerminated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "extra_visits_section",
+   "fieldtype": "Section Break",
+   "label": "Extra Visits"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "extra_visits",
+   "fieldtype": "Table",
+   "label": "Extra Visits",
+   "options": "Service Contract Visit"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "first_payment_date",
+   "fieldtype": "Date",
+   "label": "First Payment Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "second_payment_date",
+   "fieldtype": "Date",
+   "label": "Second Payment Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "third_payment",
+   "fieldtype": "Date",
+   "label": "Third Payment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "fourth_payment",
+   "fieldtype": "Date",
+   "label": "Fourth Payment"
+  },
+  {
+   "allow_on_submit": 1,
+   "bold": 1,
+   "default": "IBAN No: BH37NBOB00000092108555\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Received by:\nBank Account: 0092108555\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Signature:\nNational Bank of Bahrain\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Owner name:\nSwift Code: NBOBBHBM\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Owner sign:\nBenefit Pay: 39444873\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Date\nCheck Issued to: Alqallaf Pest Control and Cleaning Service\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Phone No:",
+   "fieldname": "payment_and_notes",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "label": "Payment and Notes",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.docstatus == 1",
+   "fieldname": "regenerate_schedule",
+   "fieldtype": "Button",
+   "label": "Regenerate Schedule"
+  }
+ ],
+ "grid_page_length": 50,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-26 11:11:38.837745",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Service Contract",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

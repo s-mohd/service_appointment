@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "creation": "2020-09-06 23:26:47.889961",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "area_type",
+  "size",
+  "qty",
+  "control_type",
+  "description"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "area_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Area Type",
+   "options": "Area Type"
+  },
+  {
+   "columns": 2,
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Size",
+   "options": "Small\nMedium\nLarge\nExtra Large"
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty"
+  },
+  {
+   "columns": 3,
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "columns": 2,
+   "fieldname": "control_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Control Type",
+   "options": "Control Type"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2020-09-06 23:46:03.989962",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Service Area Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

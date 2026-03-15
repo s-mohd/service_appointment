@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2020-11-13 12:00:04.770243",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2020-11-14 08:51:05.664459",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "service-team-schedule",
+ "owner": "Administrator",
+ "page_name": "service-team-schedule",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Service Team Schedule"
+}

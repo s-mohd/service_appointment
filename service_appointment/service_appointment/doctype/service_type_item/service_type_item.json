@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2020-09-20 10:28:38.623348",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service Type",
+   "options": "Service Type"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2020-10-06 00:11:39.304188",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Service Type Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,36 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2025-04-06 06:38:58.225645",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Standard Al-Qallaf",
+ "letterhead": null,
+ "modified": "2025-04-06 06:38:58.225645",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Contact Log Summary",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Contact Log Record",
+ "report_name": "Contact Log Summary",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Call Center"
+  },
+  {
+   "role": "HR Manager"
+  }
+ ]
+}

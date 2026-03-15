@@ -1,0 +1,122 @@
+<style>
+    .print-format {
+        padding: 4mm;
+    }
+    .print-format td {
+        vertical-align:middle !important;
+    }
+    tbody tr td {
+        text-align: left;
+    }
+    tbody tr td div {
+        text-align: left !important;
+    }
+    /*********/
+    .table.main {
+        width: 960px !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        width: 100% !important;
+        display: table !important;
+        margin: 0 !important;
+    }
+    
+    .main thead tr th {
+        color: #ffffff !important;
+        background: #6c7ae0 !important;
+    }
+    
+    .main tbody tr td {
+        font-size: 13px !important;
+        color: #666666 !important;
+        line-height: 1.2 !important;
+        /*padding-top: 20px !important;
+        padding-bottom: 20px !important;*/
+        border-bottom: 1px solid #f2f2f2 !important;
+    }
+    
+    .main thead tr td {
+        font-size: 18px !important;
+        color: #fff !important;
+        line-height: 1.2 !important;
+    
+        padding-top: 19px !important;
+        padding-bottom: 19px !important;
+    }
+    
+    .main table, tr {
+        width: 100% !important;
+    }
+    
+    .main tr:hover {
+        background-color: #ececff !important;
+        cursor: pointer !important;
+    }
+    .print-format .main th {
+        background: #6c7ae0 !important;
+    }
+    </style>
+    
+    <h2 class="text-center" style="margin-top:0">{%= __("Daily Service Appointment") %}</h2>
+    {% if (filters.date) { %}
+    <h3 class="text-center" style="margin-top: 10px">
+        {%= filters.date %}
+    </h3>
+    {% } %}
+    
+    <table class="table table-bordered table-striped main">
+        <thead>
+            <tr>
+                <th>{%= __("ID") %}</th>
+                <th>{%= __("Team") %}</th>
+                <th>{%= __("Customer") %}</th>
+                <th>{%= __("Mobile No.") %}</th>
+                <th>{%= __("Address") %}</th>
+                <th>{%= __("Time") %}</th>
+                <th>{%= __("Total Amount") %}</th>
+                <th>{%= __("Service Type") %}</th>
+                <th>{%= __("Area") %}</th>
+                <th>{%= __("Notes") %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for(var i=0, l=report.raw_data.report_summary[0].length; i<l; i++) { %}
+                <tr>
+                    <td>{{ report.raw_data.report_summary[0][i].name }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].team }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].customer }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].mobile_no }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].address_display }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].time }}</td>
+                    <td>{{ frappe.format(report.raw_data.report_summary[0][i].total_amount, {fieldtype: "Currency"}) }}</td>
+                    <td>{{ report.raw_data.report_summary[0][i].service_type }}</td>
+                    <td>
+                        {% if(report.raw_data.report_summary[0][i].service_areas.length > 0) { %}
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __("Area Type") }}</th>
+                                        <th>{{ __("Size") }}</th>
+                                        <th>{{ __("Qty") }}</th>
+                                        <th>{{ __("Control Type") }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for(var x=0; x<report.raw_data.report_summary[0][i].service_areas.length; x++) { %}
+                                        <tr>
+                                            <td>{{ report.raw_data.report_summary[0][i].service_areas[x]['area_type'] }}</td>
+                                            <td>{{ report.raw_data.report_summary[0][i].service_areas[x]['size'] }}</td>
+                                            <td>{{ report.raw_data.report_summary[0][i].service_areas[x]['qty'] }}</td>
+                                            <td>{{ report.raw_data.report_summary[0][i].service_areas[x]['control_types'] }}</td>
+                                        </tr>
+                                    {% } %}
+                                </tbody>
+                            </table>
+                        {% } %}
+                    </td>
+                    <td>{{ report.raw_data.report_summary[0][i].notes }}</td>
+                </tr>
+            {% } %}
+        </tbody>
+    </table>
+        

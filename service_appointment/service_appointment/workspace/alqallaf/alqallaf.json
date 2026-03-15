@@ -1,0 +1,100 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"aCsGH34Fqh\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Your Shortcuts</span>\",\"col\":12}},{\"id\":\"hbEmT5UEtx\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Team Schedule\",\"col\":4}},{\"id\":\"Mj4QJbpbb3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Appointment\",\"col\":4}},{\"id\":\"fLVBweECsj\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Contract\",\"col\":4}},{\"id\":\"4ji9gyEt7M\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Items Transfer\",\"col\":3}},{\"id\":\"6Ar13Lu-oT\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YW0v-XVQUW\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reports &amp; Masters</span>\",\"col\":12}},{\"id\":\"s_N_81T3SG\",\"type\":\"card\",\"data\":{\"card_name\":\"Srevice Appointment\",\"col\":4}},{\"id\":\"nw_YxT8yA0\",\"type\":\"card\",\"data\":{\"card_name\":\"Service Contract\",\"col\":4}}]",
+ "creation": "2020-11-13 11:38:34.547348",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Alqallaf",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Service Contract",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Service Contract",
+   "link_count": 0,
+   "link_to": "Service Contract",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Service Contract Template",
+   "link_count": 0,
+   "link_to": "Service Contract Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Srevice Appointment",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Service Appointment",
+   "link_count": 0,
+   "link_to": "Service Appointment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-07-17 09:38:30.424597",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Alqallaf",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Service Items Transfer",
+   "link_to": "Service Items Transfer",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "label": "Service Team Schedule",
+   "link_to": "service-team-schedule",
+   "type": "Page"
+  },
+  {
+   "doc_view": "List",
+   "label": "Service Appointment",
+   "link_to": "Service Appointment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Service Contract",
+   "link_to": "Service Contract",
+   "type": "DocType"
+  }
+ ],
+ "title": "Alqallaf"
+}

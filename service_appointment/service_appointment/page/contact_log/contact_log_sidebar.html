@@ -1,0 +1,15 @@
+<div class="contact-log-sidebar">
+    <div class="contact-intro">
+		{% if customer_name %}
+		<p class="customer-name bold">{{customer_name}}</p>
+		{% endif %}
+		{% if customer_mobile %}
+		<p class="customer-mobile text-muted"><b>{%=__("Mobile: ") %}</b> <span class="customer-mobile-no">{{customer_mobile}}</span></p>
+		{% endif %}
+        {% if customer_address %}
+		<p class="customer-address text-muted">{%=__("Address: ") %} {{customer_address}}</p>
+		{% endif %}
+	</div>
+    <div class="contact-details">
+    </div>
+</div>

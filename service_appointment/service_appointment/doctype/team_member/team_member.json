@@ -1,0 +1,32 @@
+{
+ "actions": [],
+ "creation": "2020-09-02 20:30:15.371052",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "member_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "member_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Member Name",
+   "options": "Employee",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2020-09-02 20:30:15.371052",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Team Member",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

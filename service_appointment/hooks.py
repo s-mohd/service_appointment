@@ -1,25 +1,15 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from . import __version__ as app_version
+
 app_name = "service_appointment"
 app_title = "Service Appointment"
-app_publisher = " "
-app_description = " "
-app_email = "sayed10998@gmail.com"
-app_license = "mit"
-
-# Apps
-# ------------------
-
-# required_apps = []
-
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "service_appointment",
-# 		"logo": "/assets/service_appointment/logo.png",
-# 		"title": "Service Appointment",
-# 		"route": "/service_appointment",
-# 		"has_permission": "service_appointment.api.permission.has_app_permission"
-# 	}
-# ]
+app_publisher = "Sayed Hameed Ebrahim"
+app_description = "Manage Service Appointments"
+app_icon = "fa fa-calendar"
+app_color = "grey"
+app_email = "sayed.saar@gmail.com"
+app_license = "MIT"
 
 # Includes in <head>
 # ------------------
@@ -31,9 +21,6 @@ app_license = "mit"
 # include js, css files in header of web template
 # web_include_css = "/assets/service_appointment/css/service_appointment.css"
 # web_include_js = "/assets/service_appointment/js/service_appointment.js"
-
-# include custom scss in every website theme (without file extension ".scss")
-# website_theme_scss = "service_appointment/public/scss/website"
 
 # include js, css files in header of web form
 # webform_include_js = {"doctype": "public/js/doctype.js"}
@@ -48,11 +35,6 @@ app_license = "mit"
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
-# Svg Icons
-# ------------------
-# include app icons in desk
-# app_include_icons = "service_appointment/public/icons.svg"
-
 # Home Pages
 # ----------
 
@@ -61,8 +43,11 @@ app_license = "mit"
 
 # website user home page (by Role)
 # role_home_page = {
-# 	"Role": "home_page"
+#	"Role": "home_page"
 # }
+
+# Website user home page (by function)
+# get_website_user_home_page = "service_appointment.utils.get_home_page"
 
 # Generators
 # ----------
@@ -70,45 +55,11 @@ app_license = "mit"
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
 
-# automatically load and sync documents of this doctype from downstream apps
-# importable_doctypes = [doctype_1]
-
-# Jinja
-# ----------
-
-# add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "service_appointment.utils.jinja_methods",
-# 	"filters": "service_appointment.utils.jinja_filters"
-# }
-
 # Installation
 # ------------
 
 # before_install = "service_appointment.install.before_install"
 # after_install = "service_appointment.install.after_install"
-
-# Uninstallation
-# ------------
-
-# before_uninstall = "service_appointment.uninstall.before_uninstall"
-# after_uninstall = "service_appointment.uninstall.after_uninstall"
-
-# Integration Setup
-# ------------------
-# To set up dependencies/integrations with other apps
-# Name of the app being installed is passed as an argument
-
-# before_app_install = "service_appointment.utils.before_app_install"
-# after_app_install = "service_appointment.utils.after_app_install"
-
-# Integration Cleanup
-# -------------------
-# To clean up dependencies/integrations with other apps
-# Name of the app being uninstalled is passed as an argument
-
-# before_app_uninstall = "service_appointment.utils.before_app_uninstall"
-# after_app_uninstall = "service_appointment.utils.after_app_uninstall"
 
 # Desk Notifications
 # ------------------
@@ -120,13 +71,13 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Material Request": "service_appointment.service_appointment.api.material_request_get_permission_query_conditions",
+}
+
+has_permission = {
+	"Material Request": "service_appointment.service_appointment.api.material_request_has_permission",
+}
 
 # Document Events
 # ---------------
@@ -137,7 +88,7 @@ app_license = "mit"
 # 		"on_update": "method",
 # 		"on_cancel": "method",
 # 		"on_trash": "method"
-# 	}
+#	}
 # }
 
 # Scheduled Tasks
@@ -155,24 +106,16 @@ app_license = "mit"
 # 	],
 # 	"weekly": [
 # 		"service_appointment.tasks.weekly"
-# 	],
+# 	]
 # 	"monthly": [
 # 		"service_appointment.tasks.monthly"
-# 	],
+# 	]
 # }
 
 # Testing
 # -------
 
 # before_tests = "service_appointment.install.before_tests"
-
-# Extend DocType Class
-# ------------------------------
-#
-# Specify custom mixins to extend the standard doctype controller.
-# extend_doctype_class = {
-# 	"Task": "service_appointment.custom.task.CustomTaskMixin"
-# }
 
 # Overriding Methods
 # ------------------------------
@@ -192,61 +135,48 @@ app_license = "mit"
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
-# Ignore links to specified DocTypes when deleting documents
-# -----------------------------------------------------------
+#doc_events = {
+#	"Sales Invoice": {
+#		"on_submit": "service_appointment.service_appointment.doctype.service_appointment.service_appointment.update_invoiced_amount",
+#	}
+#}
 
-# ignore_links_on_delete = ["Communication", "ToDo"]
+scheduler_events = {
+	"daily": [
+		"service_appointment.service_appointment.api.update_contract_status"
+	],
+	"hourly": [
+		"service_appointment.service_appointment.api.send_reminder_sms"
+	]
+}
 
-# Request Events
-# ----------------
-# before_request = ["service_appointment.utils.before_request"]
-# after_request = ["service_appointment.utils.after_request"]
+app_include_js = [
+	'/assets/service_appointment/js/customer_quick_entry.js',
+]
 
-# Job Events
-# ----------
-# before_job = ["service_appointment.utils.before_job"]
-# after_job = ["service_appointment.utils.after_job"]
+boot_session = "service_appointment.service_appointment.startup.boot.boot_session"
 
-# User Data Protection
-# --------------------
+doc_events = {
+    'Customer': {
+        'on_update': 'service_appointment.service_appointment.customer_quick_entry.custom_customer_info'
+    }
+}
 
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
-
-# Authentication and authorization
-# --------------------------------
-
-# auth_hooks = [
-# 	"service_appointment.auth.validate"
-# ]
-
-# Automatically update python controller files with type annotations for this app.
-# export_python_type_annotations = True
-
-# default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
-# }
-
-# Translation
-# ------------
-# List of apps whose translatable strings should be excluded from this app's translations.
-# ignore_translatable_strings_from = []
-
+fixtures = [
+	{"dt": "Custom Field", "filters": [
+		[
+			"name", "in", [
+				'Sales Invoice Item-service_appointment',
+				'Sales Invoice Item-service_appointment_item',
+				'Stock Entry-service_appointment'
+			]
+		]
+	]},
+	{"dt": "Print Format", "filters": [
+		[
+			"name", "in", [
+				'Service Appointment'
+			]
+		]
+	]}
+]

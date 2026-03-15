@@ -1,0 +1,54 @@
+{% if data %}
+<style>
+.table-bordered > thead > tr > th, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > tbody > tr > td, .table-bordered > tfoot > tr > td {
+	border: 1px solid #979ea2;
+	text-align: center;
+}
+
+.table-bordered {
+    border: 1px solid #979ea2;
+}
+
+.table th.header{
+    font-weight: bold;
+    font-size: 18px;
+    padding: 0px;
+    text-align: left;
+    background: lightgrey;
+    padding-left: 5px;
+}
+
+</style>
+
+{% for date in data %}
+    <table class="table table-bordered small">
+        <thead>
+            <tr>
+                <th colspan="27" class="header">{{ __(date.date_display) }}</th>
+            </tr>
+            <tr style="background: antiquewhite; font-size: 12px;">
+                <th style="width: 15%;">{{ __("Service Team") }}</th>
+                <th>{{ __("Check/Uncheck All") }}</th>
+                {% for hour in hours %}
+                    <th>{{ __(hour.hour) }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in date.records %}
+                <tr>
+                    <td>{{ record.team_name }}</td>
+                    <td><input type="checkbox" class="check-all"></td>
+                    {% for hour in hours %}
+                        <td style="font-weight:bold">
+                            <input class="checkboxes" type="checkbox" data-team="{{ record.team_docname }}" data-date="{{ record.date }}" data-hour="{{ hour.name }}" data-value="{{ record[hour.name] }}" {% if record[hour.name] %}checked="checked"{% endif %} />
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
+{% } else { %}
+    <p style="margin-top: 30px;"> No Records. </p>
+{% } %}
