@@ -616,7 +616,7 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			this.render_kpis({ total: 0, fully_assigned: 0, under_assigned: 0, unassigned: 0 });
 			this.table_wrapper.html(`
 				<div class="text-muted" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--fg-color);">
-					${__('No appointments found for this filter.')}
+					${__('No appointments were found.')}
 				</div>
 			`);
 			return;
@@ -710,6 +710,11 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		const data = this.member_board_data || { members: [] };
 		const members = data.members || [];
 		const selected_row = this.by_name[this.selected_appointment] || null;
+
+		if (!this.appointments.length) {
+			this.reset_board_state();
+			return;
+		}
 
 		if (!selected_row) {
 			this.reset_board_state();
