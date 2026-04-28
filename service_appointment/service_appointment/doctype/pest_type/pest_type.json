@@ -7,7 +7,10 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "pest_type"
+  "pest_type",
+  "default_duration",
+  "technician_instructions",
+  "safety_measures"
  ],
  "fields": [
   {
@@ -15,6 +18,22 @@
    "fieldtype": "Data",
    "label": "Pest Type",
    "unique": 1
+  },
+  {
+   "default": "75",
+   "fieldname": "default_duration",
+   "fieldtype": "Int",
+   "label": "Default Duration (mins)"
+  },
+  {
+   "fieldname": "technician_instructions",
+   "fieldtype": "Text Editor",
+   "label": "Technician Instructions"
+  },
+  {
+   "fieldname": "safety_measures",
+   "fieldtype": "Text Editor",
+   "label": "Safety Measures"
   }
  ],
  "links": [],

@@ -3,6 +3,10 @@ from frappe import _
 import frappe
 
 
+def _address_field_exists(fieldname):
+	return frappe.get_meta("Address").has_field(fieldname)
+
+
 def custom_customer_info(doc, method):
     # this function will get call `on_update` as we define in hook.py
     add_address_info(doc)
@@ -24,18 +28,30 @@ def add_address_info(doc):
             frappe.throw("{0} <br><br> <ul>{1}</ul>".format(msg, '\n'.join(reqd_fields)),
                 title = _("Missing Values Required"))
 
-        address = frappe.get_doc({
+        block_no = doc.get("block_no") or doc.get("block")
+        address_payload = {
             'doctype': 'Address',
             'address_title': doc.get('name'),
             'address_line1': doc.get('address_line1'),
-            'building': doc.get('building'),
-            'road': doc.get('road'),
-            'block': doc.get('block'),
-            'flat': doc.get('flat'),
             'city': doc.get('city'),
             'country': doc.get('country'),
             'links': [{
                 'link_doctype': 'Customer',
                 'link_name': doc.get('name')
             }]
-        }).insert()
+        }
+
+        optional_address_fields = {
+            'building': doc.get('building'),
+            'road': doc.get('road'),
+            'flat': doc.get('flat'),
+            'block_no': block_no,
+        }
+        for fieldname, value in optional_address_fields.items():
+            if value and _address_field_exists(fieldname):
+                address_payload[fieldname] = value
+
+        if block_no and _address_field_exists("block") and not _address_field_exists("block_no"):
+            address_payload["block"] = block_no
+
+        frappe.get_doc(address_payload).insert()

@@ -33,7 +33,7 @@ frappe.pages['service-team-schedule'].on_page_load = function (wrapper) {
 			if (errors.length > 0) {
 				frappe.msgprint("Please enter:<br>" + errors.join("<br>"), "Error");
 			} else {
-				show_schedule(this.date_range.value);
+				show_schedule(this.date_range.value, page);
 			}
 
 		}
@@ -73,7 +73,7 @@ frappe.pages['service-team-schedule'].on_page_load = function (wrapper) {
 					if (r.message) {
 						frappe.show_alert({ message: __(r.message), indicator: 'green' });
 					}
-					show_schedule(cur_page.page.date_range.value);
+					show_schedule(cur_page.page.date_range.value, page);
 				}
 			});
 		}
@@ -83,7 +83,7 @@ frappe.pages['service-team-schedule'].on_page_load = function (wrapper) {
 	this.update.$input.addClass('btn-primary');
 };
 
-var show_schedule = function (date_range) {
+var show_schedule = function (date_range, page) {
 	frappe.call({
 		"method": "service_appointment.service_appointment.page.service_team_schedule.service_team_schedule.get_schedule_records",
 		args: {
@@ -125,8 +125,8 @@ var show_schedule = function (date_range) {
 				hours: hours
 			});
 
-			$('.layout-footer').removeClass('hide');
-			$('.layout-footer').html(html);
+			$(page.wrapper).find('.layout-footer').removeClass('hide');
+			$(page.wrapper).find('.layout-footer').html(html);
 		}
 	});
 };

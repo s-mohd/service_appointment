@@ -30,6 +30,8 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			reason_options: [],
 		};
 		this.rows_by_name = {};
+		this.pending_actions = {};
+		this.active_complete_dialog_for = '';
 
 		this.ensure_styles();
 		this.make_body();
@@ -80,10 +82,14 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 					font-size: 12px;
 					font-weight: 600;
 				}
-				.ts-pill.red {
-					background: rgba(229, 83, 83, 0.12);
-					color: #8f2323;
-				}
+					.ts-pill.red {
+						background: rgba(229, 83, 83, 0.12);
+						color: #8f2323;
+					}
+					.ts-pill.orange {
+						background: rgba(245, 159, 0, 0.18);
+						color: #825300;
+					}
 				.ts-section {
 					margin-bottom: 14px;
 				}
@@ -107,15 +113,20 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 					border-color: #e55353;
 					background: rgba(229, 83, 83, 0.06);
 				}
-				.ts-head {
-					display: flex;
-					align-items: flex-start;
-					justify-content: space-between;
-					gap: 8px;
-				}
-				.ts-title {
-					font-size: 13px;
-					font-weight: 700;
+					.ts-head {
+						display: flex;
+						align-items: flex-start;
+						justify-content: space-between;
+						gap: 8px;
+					}
+					.ts-head-right {
+						display: inline-flex;
+						align-items: center;
+						gap: 6px;
+					}
+					.ts-title {
+						font-size: 13px;
+						font-weight: 700;
 					line-height: 1.3;
 				}
 				.ts-subtitle {
@@ -133,10 +144,52 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 				.ts-status.blue { background: rgba(10, 124, 255, 0.15); color: #0a4e99; }
 				.ts-status.orange { background: rgba(245, 159, 0, 0.20); color: #825300; }
 				.ts-status.red { background: rgba(229, 83, 83, 0.20); color: #a12626; }
-				.ts-status.gray { background: rgba(140, 140, 140, 0.16); color: #444; }
-				.ts-row {
-					margin-top: 6px;
-					font-size: 12px;
+					.ts-status.gray { background: rgba(140, 140, 140, 0.16); color: #444; }
+					.btn-ts-safety {
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						width: 28px;
+						height: 28px;
+						padding: 0;
+						border-radius: 999px;
+						font-size: 13px;
+						font-weight: 800;
+						border: 1px solid rgba(10, 124, 255, 0.26);
+						color: #0a4e99;
+						background: linear-gradient(180deg, rgba(10, 124, 255, 0.16), rgba(10, 124, 255, 0.08));
+						box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+						transition: all 0.18s ease;
+					}
+					.btn-ts-safety:hover {
+						color: #07396f;
+						background: linear-gradient(180deg, rgba(10, 124, 255, 0.24), rgba(10, 124, 255, 0.13));
+						border-color: rgba(10, 124, 255, 0.4);
+						transform: translateY(-1px);
+					}
+					.btn-ts-safety:focus {
+						outline: none;
+						box-shadow: 0 0 0 2px rgba(10, 124, 255, 0.2);
+					}
+					.ts-context {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 6px;
+						margin-top: 7px;
+					}
+					.ts-chip {
+						display: inline-flex;
+						align-items: center;
+						padding: 2px 8px;
+						border-radius: 999px;
+						font-size: 11px;
+						font-weight: 600;
+						background: rgba(10, 124, 255, 0.10);
+						color: #0a4e99;
+					}
+					.ts-row {
+						margin-top: 6px;
+						font-size: 12px;
 					line-height: 1.4;
 				}
 				.ts-collect {
@@ -160,11 +213,31 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 					margin-top: 8px;
 					flex-wrap: wrap;
 				}
-				.ts-actions .btn {
-					border-radius: 8px;
-				}
-				.ts-empty {
-					border: 1px dashed var(--border-color);
+					.ts-actions .btn {
+						border-radius: 8px;
+					}
+					.ts-actions .btn.ts-loading {
+						opacity: 0.92;
+					}
+					.ts-actions .btn[disabled] {
+						cursor: not-allowed;
+					}
+					.ts-spin {
+						display: inline-block;
+						width: 12px;
+						height: 12px;
+						border: 2px solid currentColor;
+						border-right-color: transparent;
+						border-radius: 50%;
+						animation: ts-spin 0.8s linear infinite;
+						vertical-align: -2px;
+						margin-right: 5px;
+					}
+					@keyframes ts-spin {
+						to { transform: rotate(360deg); }
+					}
+					.ts-empty {
+						border: 1px dashed var(--border-color);
 					border-radius: 10px;
 					padding: 12px;
 					font-size: 12px;
@@ -175,11 +248,20 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 					font-weight: 700;
 					margin-bottom: 4px;
 				}
-				.ts-step-desc {
-					font-size: 11px;
-					color: var(--text-muted);
-					margin-bottom: 6px;
-				}
+					.ts-step-desc {
+						font-size: 11px;
+						color: var(--text-muted);
+						margin-bottom: 6px;
+					}
+					.ts-pending-note {
+						margin-top: 6px;
+						padding: 6px 8px;
+						border-radius: 8px;
+						background: rgba(245, 159, 0, 0.14);
+						color: #825300;
+						font-size: 12px;
+						font-weight: 600;
+					}
 				.ts-wizard-progress {
 					display: flex;
 					gap: 6px;
@@ -210,25 +292,64 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 					max-height: 72vh;
 					overflow-y: auto;
 				}
-				.ts-complete-wizard-dialog .modal-footer {
-					position: sticky;
+					.ts-complete-wizard-dialog .modal-footer {
+						position: sticky;
 					bottom: 0;
 					background: var(--fg-color);
 					border-top: 1px solid var(--border-color);
-					z-index: 2;
-				}
-				@media (max-width: 991px) {
-					.ts-grid { grid-template-columns: 1fr; }
-				}
-				@media (max-width: 430px) {
+						z-index: 2;
+					}
+					.ts-safety-dialog .modal-dialog {
+						width: 96vw;
+						max-width: 560px;
+					}
+					.ts-safety-body {
+						display: flex;
+						flex-direction: column;
+						gap: 10px;
+						max-height: 60vh;
+						overflow-y: auto;
+					}
+					.ts-safety-block {
+						border: 1px solid var(--border-color);
+						border-radius: 10px;
+						padding: 10px;
+						background: var(--subtle-fg);
+					}
+					.ts-safety-block h5 {
+						margin: 0 0 6px;
+						font-size: 12px;
+						font-weight: 700;
+					}
+					.ts-safety-empty {
+						color: var(--text-muted);
+						font-size: 12px;
+					}
+					@media (max-width: 991px) {
+						.ts-grid { grid-template-columns: 1fr; }
+					}
+					@media (max-width: 430px) {
 					.ts-toolbar { gap: 6px; }
 					.ts-toolbar .btn { padding: 6px 10px; }
 					.ts-card { padding: 9px; }
 					.ts-actions .btn { flex: 1 1 auto; min-width: 120px; }
-					.ts-status { font-size: 10px; }
-					.ts-complete-wizard-dialog .modal-dialog {
-						width: 100vw;
-						max-width: 100vw;
+						.ts-status { font-size: 10px; }
+						.ts-safety-dialog .modal-dialog {
+							width: 100vw;
+							max-width: 100vw;
+							margin: 0;
+							height: auto;
+							position: fixed;
+							left: 0;
+							right: 0;
+							bottom: 0;
+						}
+						.ts-safety-dialog .modal-content {
+							border-radius: 14px 14px 0 0;
+						}
+						.ts-complete-wizard-dialog .modal-dialog {
+							width: 100vw;
+							max-width: 100vw;
 						margin: 0;
 						height: 100vh;
 					}
@@ -310,17 +431,29 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			window.open(url, '_blank');
 		});
 
+		this.root.on('click', '.btn-ts-safety', (e) => {
+			const appointment = $(e.currentTarget).data('name');
+			const row = this.get_row(appointment);
+			if (!row || !cint_or_zero(row.has_safety_info)) return;
+			this.open_safety_dialog(row);
+		});
+
 		this.root.on('click', '.btn-ts-start', (e) => {
 			const appointment = $(e.currentTarget).data('name');
 			this.start_service(appointment);
 		});
-
-		this.root.on('click', '.btn-ts-complete', (e) => {
+		this.root.on('click', '.btn-ts-reached', (e) => {
 			const appointment = $(e.currentTarget).data('name');
-			const row = this.get_row(appointment);
-			if (!row) return;
-			this.open_complete_wizard(row);
+			this.mark_reached(appointment);
 		});
+
+			this.root.on('click', '.btn-ts-complete', (e) => {
+				const appointment = $(e.currentTarget).data('name');
+				const row = this.get_row(appointment);
+				if (!row) return;
+				if (this.active_complete_dialog_for === appointment) return;
+				this.open_complete_wizard(row);
+			});
 
 		this.root.on('click', '.btn-ts-no-start', (e) => {
 			const appointment = $(e.currentTarget).data('name');
@@ -365,10 +498,8 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 		const tech = this.data.technician || {};
 		const overdue = this.data.overdue || [];
 		const today_rows = this.data.today || [];
-		const upcoming = this.data.upcoming || [];
-
 		this.rows_by_name = {};
-		[...overdue, ...today_rows, ...upcoming].forEach((row) => {
+		[...overdue, ...today_rows].forEach((row) => {
 			this.rows_by_name[row.name] = row;
 		});
 
@@ -397,7 +528,7 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 		`;
 	}
 
-	render_card(row, section_cls) {
+		render_card(row, section_cls) {
 		const status_color = row.status_color || 'gray';
 		const collect_cls = row.collect_amount === 'Yes' ? 'yes' : 'no';
 		const map_button_cls = row.map_url ? 'btn btn-default btn-xs btn-ts-map' : 'btn btn-default btn-xs btn-ts-map disabled';
@@ -407,37 +538,87 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 		const service_location = (row.location || row.address_text || '').trim() || '-';
 		const assigned_members = (row.assigned_members || []).filter(Boolean);
 		const assigned_members_text = assigned_members.length ? assigned_members.join(', ') : '-';
+			const can_show_safety = cint_or_zero(row.has_safety_info) === 1;
+			const is_pending_materials = (row.appointment_status || '') === 'Partially Completed' || cint_or_zero(row.is_pending_materials) === 1;
+			const row_busy = this.is_row_busy(row.name);
+		const start_pending = this.is_action_pending(row.name, 'start');
+		const reached_pending = this.is_action_pending(row.name, 'reached');
+		const complete_pending = this.is_action_pending(row.name, 'complete');
+		const no_start_pending = this.is_action_pending(row.name, 'no_start');
+		const chips = this.get_context_chips(row);
 
 		const actions = [
 			`<button type="button" class="${map_button_cls}" data-url="${this.escape_html(row.map_url || '')}">${__('Open in Map')}</button>`,
 		];
+		if (row.can_reach) {
+			actions.push(`
+				<button type="button" class="btn btn-default btn-xs btn-ts-reached ${reached_pending ? 'ts-loading' : ''}" data-name="${this.escape_html(row.name)}" ${row_busy ? 'disabled' : ''}>
+					${reached_pending ? `<span class="ts-spin"></span>${__('Saving...')}` : __('Reached')}
+				</button>
+			`);
+		}
 		if (row.can_start) {
-			actions.push(`<button type="button" class="btn btn-primary btn-xs btn-ts-start" data-name="${this.escape_html(row.name)}">${__('Start Service')}</button>`);
+			actions.push(`
+				<button type="button" class="btn btn-primary btn-xs btn-ts-start ${start_pending ? 'ts-loading' : ''}" data-name="${this.escape_html(row.name)}" ${row_busy ? 'disabled' : ''}>
+					${start_pending ? `<span class="ts-spin"></span>${__('Starting...')}` : __('Start Service')}
+				</button>
+			`);
 		}
 		if (row.can_complete) {
-			actions.push(`<button type="button" class="btn btn-success btn-xs btn-ts-complete" data-name="${this.escape_html(row.name)}">${__('Complete')}</button>`);
+			actions.push(`
+				<button type="button" class="btn btn-success btn-xs btn-ts-complete ${complete_pending ? 'ts-loading' : ''}" data-name="${this.escape_html(row.name)}" ${row_busy ? 'disabled' : ''}>
+					${complete_pending ? `<span class="ts-spin"></span>${__('Completing...')}` : __('Complete')}
+				</button>
+			`);
 		}
 		if (row.can_report_no_start) {
-			actions.push(`<button type="button" class="btn btn-warning btn-xs btn-ts-no-start" data-name="${this.escape_html(row.name)}">${__('Could Not Start')}</button>`);
+			actions.push(`
+				<button type="button" class="btn btn-warning btn-xs btn-ts-no-start ${no_start_pending ? 'ts-loading' : ''}" data-name="${this.escape_html(row.name)}" ${row_busy ? 'disabled' : ''}>
+					${no_start_pending ? `<span class="ts-spin"></span>${__('Submitting...')}` : __('Could Not Start')}
+				</button>
+			`);
 		}
+		const safety_btn = can_show_safety
+			? `<button type="button" class="btn-ts-safety" data-name="${this.escape_html(row.name)}" title="${this.escape_html(__('Service Instructions & Safety'))}" aria-label="${this.escape_html(__('Service Instructions & Safety'))}">i</button>`
+			: '';
 
-		return `
-			<div class="ts-card ${this.escape_html(section_cls || '')}">
+			return `
+				<div class="ts-card ${this.escape_html(section_cls || '')}">
 				<div class="ts-head">
 					<div>
 						<div class="ts-title"><a href="/app/service-appointment/${encodeURIComponent(row.name)}" target="_blank">${this.escape_html(row.name)}</a></div>
 						<div class="ts-subtitle">${this.escape_html(date_label)} | ${this.escape_html(time_text)} (${duration_minutes}m)</div>
 					</div>
-					<span class="ts-status ${this.escape_html(status_color)}">${this.escape_html(row.appointment_status || '')}</span>
+					<div class="ts-head-right">
+						<span class="ts-status ${this.escape_html(status_color)}">${this.escape_html(row.appointment_status || '')}</span>
+						${safety_btn}
 					</div>
-					<div class="ts-row"><strong>${__('Customer')}:</strong> ${this.escape_html(row.customer || '-')}</div>
-					<div class="ts-row"><strong>${__('Team')}:</strong> ${this.escape_html(row.team || '-')}</div>
-					<div class="ts-row"><strong>${__('Service Location')}:</strong> ${this.escape_html(service_location)}</div>
+							</div>
+							${chips ? `<div class="ts-context">${chips}</div>` : ''}
+							${is_pending_materials ? `<div class="ts-row"><span class="ts-pill orange">${this.escape_html(__('Pending Materials'))}</span></div>` : ''}
+							<div class="ts-row"><strong>${__('Customer')}:</strong> ${this.escape_html(row.customer || '-')}</div>
+							<div class="ts-row"><strong>${__('Team')}:</strong> ${this.escape_html(row.team || '-')}</div>
+							<div class="ts-row"><strong>${__('Service Location')}:</strong> ${this.escape_html(service_location)}</div>
 					<div class="ts-row"><strong>${__('Assigned Members')}:</strong> ${this.escape_html(assigned_members_text)}</div>
 					<div class="ts-collect ${collect_cls}">${this.escape_html(row.collect_message || '')}</div>
 					<div class="ts-actions">${actions.join('')}</div>
 				</div>
-			`;
+		`;
+	}
+
+	get_context_chips(row) {
+		const chips = [];
+		if (row.service_type) {
+			chips.push(`<span class="ts-chip">${this.escape_html(row.service_type)}</span>`);
+		}
+		if (row.building_type) {
+			chips.push(`<span class="ts-chip">${this.escape_html(row.building_type)}</span>`);
+		}
+		(row.pest_types || []).slice(0, 3).forEach((pest) => {
+			if (!pest) return;
+			chips.push(`<span class="ts-chip">${this.escape_html(pest)}</span>`);
+		});
+		return chips.join('');
 	}
 
 	format_time_label(value) {
@@ -458,20 +639,49 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 
 	start_service(appointment) {
 		if (!appointment) return;
+		if (this.is_row_busy(appointment)) return;
+		const row = this.get_row(appointment);
+		this.set_action_pending(appointment, 'start', true);
 		frappe.call({
 			method: 'service_appointment.service_appointment.page.technician_services.technician_services.start_service',
 			args: {
 				appointment,
 				started_at: frappe.datetime.now_time(),
 			},
-			freeze: true,
-			freeze_message: __('Starting service...'),
+			freeze: false,
 			callback: (r) => {
 				if (r.message && r.message.status === 'success') {
 					frappe.show_alert({ message: __('Service started'), indicator: 'green' });
+					if (row && cint_or_zero(row.has_safety_info) === 1) {
+						this.open_safety_dialog(row);
+					}
 					this.refresh();
 				}
+				this.set_action_pending(appointment, 'start', false);
 			},
+			error: () => this.set_action_pending(appointment, 'start', false),
+		});
+	}
+
+	mark_reached(appointment) {
+		if (!appointment) return;
+		if (this.is_row_busy(appointment)) return;
+		this.set_action_pending(appointment, 'reached', true);
+		frappe.call({
+			method: 'service_appointment.service_appointment.page.technician_services.technician_services.mark_reached',
+			args: {
+				appointment,
+				reached_at: normalize_time_for_backend(frappe.datetime.now_time()),
+			},
+			freeze: false,
+			callback: (r) => {
+				if (r.message && r.message.status === 'success') {
+					frappe.show_alert({ message: __('Reached time saved'), indicator: 'green' });
+					this.refresh();
+				}
+				this.set_action_pending(appointment, 'reached', false);
+			},
+			error: () => this.set_action_pending(appointment, 'reached', false),
 		});
 	}
 
@@ -479,39 +689,51 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 		const d = new frappe.ui.Dialog({
 			title: __('Could Not Start Service'),
 			fields: [
+				{ fieldtype: 'Select', fieldname: 'status', label: __('Set Status'), options: 'Reschedule\nCancelled', reqd: 1, default: 'Reschedule' },
 				{ fieldtype: 'Link', fieldname: 'reason', label: __('Reason'), options: 'Reason of Incompletion', reqd: 1 },
 				{ fieldtype: 'Small Text', fieldname: 'remarks', label: __('Remarks'), reqd: 1 },
 			],
-			primary_action_label: __('Submit'),
-			primary_action: (values) => {
-				frappe.call({
-					method: 'service_appointment.service_appointment.page.technician_services.technician_services.report_could_not_start',
-					args: {
-						appointment,
-						reason: values.reason,
-						remarks: values.remarks,
-					},
-					freeze: true,
-					freeze_message: __('Updating service...'),
-					callback: (r) => {
-						if (r.message && r.message.status === 'success') {
-							d.hide();
-							frappe.show_alert({ message: __('Service moved to Reschedule'), indicator: 'orange' });
-							this.refresh();
-						}
-					},
-				});
-			},
-		});
+				primary_action_label: __('Submit'),
+				primary_action: (values) => {
+					if (this.is_row_busy(appointment)) return;
+					this.set_action_pending(appointment, 'no_start', true);
+					d.get_primary_btn().prop('disabled', true).text(__('Submitting...'));
+					frappe.call({
+						method: 'service_appointment.service_appointment.page.technician_services.technician_services.report_could_not_start',
+						args: {
+							appointment,
+							reason: values.reason,
+							remarks: values.remarks,
+							status: values.status,
+						},
+						freeze: false,
+						callback: (r) => {
+							if (r.message && r.message.status === 'success') {
+								d.hide();
+								const status_label = values.status || 'Reschedule';
+								frappe.show_alert({ message: __('Service updated to {0}', [status_label]), indicator: 'orange' });
+								this.refresh();
+							}
+							this.set_action_pending(appointment, 'no_start', false);
+							d.get_primary_btn().prop('disabled', false).text(__('Submit'));
+						},
+						error: () => {
+							this.set_action_pending(appointment, 'no_start', false);
+							d.get_primary_btn().prop('disabled', false).text(__('Submit'));
+						},
+					});
+				},
+			});
 		d.show();
 	}
 
-	open_complete_wizard(row) {
-		const d = new frappe.ui.Dialog({
-			title: __('Complete Service: {0}', [row.name]),
-			fields: [
-				{ fieldtype: 'HTML', fieldname: 'ht_banner' },
-				{ fieldtype: 'Select', options: 'Completed\nPartially Completed\nReschedule\nCancelled', fieldname: 'status', label: __('Status') },
+		open_complete_wizard(row) {
+			const d = new frappe.ui.Dialog({
+				title: __('Complete Service: {0}', [row.name]),
+				fields: [
+					{ fieldtype: 'HTML', fieldname: 'ht_banner' },
+					{ fieldtype: 'HTML', fieldname: 'ht_pending' },
+					{ fieldtype: 'Select', options: 'Completed\nPartially Completed', fieldname: 'status', label: __('Status') },
 				{ fieldtype: 'Link', options: 'Employee', fieldname: 'completed_by', label: __('Completed By') },
 				{
 					fieldtype: 'Table',
@@ -555,15 +777,17 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			primary_action: () => this.submit_complete_dialog(d, row),
 		});
 
-		const default_status = (row.appointment_status === 'Scheduled' || row.appointment_status === 'In Progress')
-			? 'Completed'
-			: (row.appointment_status || 'Completed');
+		const default_status = (row.appointment_status === 'Partially Completed')
+			? 'Partially Completed'
+			: 'Completed';
 		const completed_by_default = row.completed_by || ((this.data.technician || {}).employee || '');
-		const default_start = row.start_time
-			|| (row.appointment_status === 'In Progress' ? frappe.datetime.now_time() : (row.time || frappe.datetime.now_time()));
-		const default_end = frappe.datetime.now_time();
-		const default_duration = cint_or_zero(row.actual_duration) || this.get_duration(default_start, default_end);
-		const default_other_members = this.get_default_other_members(row, completed_by_default);
+			const default_start = normalize_time_for_backend(row.start_time)
+				|| normalize_time_for_backend(row.reached_time)
+				|| normalize_time_for_backend(row.time)
+				|| normalize_time_for_backend(frappe.datetime.now_time());
+			const default_end = normalize_time_for_backend(row.end_time) || normalize_time_for_backend(frappe.datetime.now_time());
+			const default_duration = cint_or_zero(row.actual_duration) || this.get_duration(default_start, default_end);
+			const default_other_members = this.get_default_other_members(row, completed_by_default);
 
 		d.set_values({
 			status: default_status,
@@ -586,7 +810,8 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			attachment: row.attachment || '',
 		});
 
-		d._emp_warehouse = '';
+			d._emp_warehouse = '';
+			this.active_complete_dialog_for = row.name;
 
 		d.fields_dict.start_time.df.onchange = () => {
 			d.set_value('duration', this.get_duration(d.get_value('start_time'), d.get_value('end_time')));
@@ -595,12 +820,14 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			d.set_value('duration', this.get_duration(d.get_value('start_time'), d.get_value('end_time')));
 		};
 
-		const refresh_depends = () => {
-			if (typeof d.refresh_dependency === 'function') {
-				d.refresh_dependency();
-			}
-			this.render_collect_banner(d);
-		};
+			const refresh_depends = () => {
+				if (typeof d.refresh_dependency === 'function') {
+					d.refresh_dependency();
+				}
+				this.render_collect_banner(d);
+				this.render_pending_message(d);
+				this.refresh_complete_primary_action(d, row);
+			};
 		d.fields_dict.status.df.onchange = refresh_depends;
 		d.fields_dict.collect_amount.df.onchange = refresh_depends;
 		d.fields_dict.amount_received.df.onchange = refresh_depends;
@@ -667,9 +894,39 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			});
 		};
 
-		refresh_depends();
-		d.show();
-	}
+			refresh_depends();
+			d.show();
+			d.$wrapper.on('hidden.bs.modal', () => {
+				this.active_complete_dialog_for = '';
+				this.set_action_pending(row.name, 'complete', false);
+			});
+		}
+
+		open_safety_dialog(row) {
+			const d = new frappe.ui.Dialog({
+				title: __('Service Instructions & Safety'),
+				fields: [{ fieldtype: 'HTML', fieldname: 'content' }],
+				primary_action_label: __('Close'),
+				primary_action: () => d.hide(),
+			});
+			d.$wrapper.addClass('ts-safety-dialog');
+
+			const instructions_html = row.technician_instructions || '';
+			const safety_html = row.safety_measures || '';
+			d.fields_dict.content.$wrapper.html(`
+				<div class="ts-safety-body">
+					<div class="ts-safety-block">
+						<h5>${this.escape_html(__('Service Instructions'))}</h5>
+						${instructions_html || `<div class="ts-safety-empty">${this.escape_html(__('No instructions added for this service type.'))}</div>`}
+					</div>
+					<div class="ts-safety-block">
+						<h5>${this.escape_html(__('Safety Measures'))}</h5>
+						${safety_html || `<div class="ts-safety-empty">${this.escape_html(__('No safety measures added for this service type.'))}</div>`}
+					</div>
+				</div>
+			`);
+			d.show();
+		}
 
 	get_default_other_members(row, completed_by) {
 		const seen = {};
@@ -688,15 +945,34 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 		return out;
 	}
 
-	render_collect_banner(d) {
-		const collect_amount = d.get_value('collect_amount');
-		d.fields_dict.ht_banner.$wrapper.html(
-			`<div class="form-message ${collect_amount === 'Yes' ? 'red' : 'green'}"><div>${collect_amount === 'Yes' ? __('Collect Amount from customer') : __('Don\'t Collect Amount from customer')}</div></div>`
-		);
-	}
+		render_collect_banner(d) {
+			const collect_amount = d.get_value('collect_amount');
+			d.fields_dict.ht_banner.$wrapper.html(
+				`<div class="form-message ${collect_amount === 'Yes' ? 'red' : 'green'}"><div>${collect_amount === 'Yes' ? __('Collect Amount from customer') : __('Don\'t Collect Amount from customer')}</div></div>`
+			);
+		}
+
+		render_pending_message(d) {
+			if (!d || !d.fields_dict || !d.fields_dict.ht_pending) return;
+			const status = d.get_value('status');
+			if (status === 'Partially Completed') {
+				d.fields_dict.ht_pending.$wrapper.html(
+					`<div class="ts-pending-note">${this.escape_html(__('Pending materials: service is ended but not submitted yet.'))}</div>`
+				);
+				return;
+			}
+			d.fields_dict.ht_pending.$wrapper.empty();
+		}
+
+		refresh_complete_primary_action(d, row) {
+			const status = d.get_value('status');
+			const label = status === 'Partially Completed' ? __('Save Pending') : __('Finalize');
+			d.set_primary_action(label, () => this.submit_complete_dialog(d, row));
+		}
 
 	submit_complete_dialog(d, row) {
 		if (!this.validate_completion_dialog(d)) return;
+		if (this.is_row_busy(row.name)) return;
 
 		const values = d.get_values() || {};
 		const payload = {
@@ -718,22 +994,30 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			other_members: values.other_members || [],
 		};
 
-		frappe.call({
-			method: 'service_appointment.service_appointment.page.technician_services.technician_services.complete_service_mobile',
+			frappe.call({
+				method: 'service_appointment.service_appointment.page.technician_services.technician_services.complete_service_mobile',
 			args: {
 				appointment: row.name,
 				payload,
 			},
-			freeze: true,
+			freeze: false,
+			btn: d.get_primary_btn(),
 			freeze_message: __('Updating service...'),
-			callback: (r) => {
-				if (r.message && r.message.status === 'success') {
-					d.hide();
-					frappe.show_alert({ message: __('Service updated successfully'), indicator: 'green' });
-					this.refresh();
-				}
+				callback: (r) => {
+					if (r.message && r.message.status === 'success') {
+						d.hide();
+						const pending = cint_or_zero(r.message.docstatus) === 0 && (r.message.appointment_status || '') === 'Partially Completed';
+						frappe.show_alert({
+							message: pending ? __('Service saved as Pending Materials') : __('Service finalized successfully'),
+							indicator: pending ? 'orange' : 'green',
+						});
+						this.refresh();
+					}
+					this.set_action_pending(row.name, 'complete', false);
 			},
+			error: () => this.set_action_pending(row.name, 'complete', false),
 		});
+		this.set_action_pending(row.name, 'complete', true);
 	}
 
 	validate_completion_dialog(d) {
@@ -767,19 +1051,13 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 			frappe.msgprint(__('Customer Mobile is mandatory.'));
 			return false;
 		}
-		if ((status === 'Reschedule' || status === 'Cancelled') && !d.get_value('reason')) {
-			frappe.msgprint(__('Reason of Incompletion is mandatory for this status.'));
+		if (!d.get_value('start_time')) {
+			frappe.msgprint(__('Start Time is mandatory.'));
 			return false;
 		}
-		if (status !== 'Reschedule' && status !== 'Cancelled') {
-			if (!d.get_value('start_time')) {
-				frappe.msgprint(__('Start Time is mandatory.'));
-				return false;
-			}
-			if (!d.get_value('end_time')) {
-				frappe.msgprint(__('End Time is mandatory.'));
-				return false;
-			}
+		if (!d.get_value('end_time')) {
+			frappe.msgprint(__('End Time is mandatory.'));
+			return false;
 		}
 
 		const used_materials = d.get_value('used_materials') || [];
@@ -816,11 +1094,53 @@ service_appointment.TechnicianServicesPage = class TechnicianServicesPage {
 	escape_html(value) {
 		return frappe.utils.escape_html((value || '').toString());
 	}
+
+	get_action_key(appointment, action) {
+		return `${appointment || ''}::${action || ''}`;
+	}
+
+	is_action_pending(appointment, action) {
+		return !!this.pending_actions[this.get_action_key(appointment, action)];
+	}
+
+	is_row_busy(appointment) {
+		const prefix = `${appointment || ''}::`;
+		return Object.keys(this.pending_actions || {}).some((key) => key.startsWith(prefix) && this.pending_actions[key]);
+	}
+
+	set_action_pending(appointment, action, pending) {
+		const key = this.get_action_key(appointment, action);
+		const was_pending = !!this.pending_actions[key];
+		if (pending) {
+			this.pending_actions[key] = true;
+		} else {
+			delete this.pending_actions[key];
+		}
+		if (was_pending === !!pending) return;
+		this.render();
+	}
 };
 
 function cint_or_zero(value) {
 	const parsed = parseInt(value, 10);
 	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalize_time_for_backend(value) {
+	if (!value) return '';
+	const raw = String(value).trim();
+	if (typeof moment !== 'undefined') {
+		const parsed = moment(raw, ['HH:mm:ss.SSSSSS', 'HH:mm:ss.SSS', 'HH:mm:ss', 'HH:mm'], true);
+		if (parsed.isValid()) {
+			return parsed.format('HH:mm:ss');
+		}
+	}
+	const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{1,2}))?/);
+	if (!match) return '';
+	const hh = String(Math.max(0, Math.min(23, parseInt(match[1], 10) || 0))).padStart(2, '0');
+	const mm = String(Math.max(0, Math.min(59, parseInt(match[2], 10) || 0))).padStart(2, '0');
+	const ss = String(Math.max(0, Math.min(59, parseInt(match[3] || '0', 10) || 0))).padStart(2, '0');
+	return `${hh}:${mm}:${ss}`;
 }
 
 function get_local_storage_value(key) {

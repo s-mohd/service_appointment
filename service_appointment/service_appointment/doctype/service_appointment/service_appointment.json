@@ -13,6 +13,9 @@
   "team",
   "required_members",
   "assigned_members",
+  "assignment_locked",
+  "assignment_state",
+  "assignment_note",
   "section_break_3",
   "customer",
   "contact_person",
@@ -64,6 +67,7 @@
   "service_area_html",
   "service_area_json",
   "actual_time_section",
+  "reached_time",
   "start_time",
   "column_break_15",
   "end_time",
@@ -163,6 +167,12 @@
    "fieldname": "actual_time_section",
    "fieldtype": "Section Break",
    "label": "Actual Time"
+  },
+  {
+   "fieldname": "reached_time",
+   "fieldtype": "Time",
+   "label": "Reached Time",
+   "read_only": 1
   },
   {
    "fieldname": "start_time",
@@ -557,6 +567,27 @@
    "fieldtype": "Table",
    "label": "Assigned Members",
    "options": "Team Member"
+  },
+  {
+   "default": "0",
+   "fieldname": "assignment_locked",
+   "fieldtype": "Check",
+   "label": "Assignment Locked"
+  },
+  {
+   "default": "Unassigned",
+   "fieldname": "assignment_state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Assignment State",
+   "options": "Unassigned\nSuggested\nAssigned\nUnder Assigned\nManual Locked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "assignment_note",
+   "fieldtype": "Small Text",
+   "label": "Assignment Note",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,

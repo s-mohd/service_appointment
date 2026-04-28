@@ -60,6 +60,7 @@ class ServiceAppointment(Document):
 			other_members=other_members,
 			reason_of_incompletion=reason_of_incompletion,
 		)
+		return 'success'
 
 	def validate(self):
 		if self.service_type in ['Contract', 'Contract Complaint', 'Complaint', 'Disinfection'] or (self.items and self.items[0].item == 'Disinfection - Sanitizing'):
@@ -67,8 +68,8 @@ class ServiceAppointment(Document):
 				self.expiry_date = ''
 
 	def on_submit(self):
-		if not self.appointment_status or self.appointment_status in ('Scheduled', 'In Progress'):
-			frappe.throw("Please complete appointment before submit")
+		if not self.appointment_status or self.appointment_status in ('Scheduled', 'In Progress', 'Partially Completed'):
+			frappe.throw(_("Please finalize appointment before submit."))
 
 		total_fees = 0
 		for item in self.items:
@@ -219,6 +220,45 @@ def _apply_complete_appointment(
 	other_members=None,
 	reason_of_incompletion=None,
 ):
+	_apply_completion_fields(
+		doc,
+		appointment_status=appointment_status,
+		mode_of_payment=mode_of_payment,
+		received_amount=received_amount,
+		used_materials=used_materials,
+		start_time=start_time,
+		end_time=end_time,
+		actual_duration=actual_duration,
+		customer_name=customer_name,
+		customer_mobile=customer_mobile,
+		signature=signature,
+		remarks=remarks,
+		attachment=attachment,
+		completed_by=completed_by,
+		other_members=other_members,
+		reason_of_incompletion=reason_of_incompletion,
+	)
+	_finalize_completion(doc, appointment_status)
+
+
+def _apply_completion_fields(
+	doc,
+	appointment_status=None,
+	mode_of_payment=None,
+	received_amount=None,
+	used_materials=None,
+	start_time=None,
+	end_time=None,
+	actual_duration=None,
+	customer_name=None,
+	customer_mobile=None,
+	signature=None,
+	remarks=None,
+	attachment=None,
+	completed_by=None,
+	other_members=None,
+	reason_of_incompletion=None,
+):
 	used_materials = used_materials or []
 	other_members = other_members or []
 
@@ -256,9 +296,13 @@ def _apply_complete_appointment(
 		WHERE `service_appointment` = '{service_appointment}'
 		""".format(appointment_status=doc.appointment_status, date=getdate(), service_appointment=doc.name))
 
+
+def _finalize_completion(doc, appointment_status):
 	if appointment_status == 'Cancelled':
 		doc.docstatus = 2
 		doc.status = 'Cancelled'
+	elif appointment_status == 'Partially Completed':
+		doc.save()
 	else:
 		doc.submit()
 

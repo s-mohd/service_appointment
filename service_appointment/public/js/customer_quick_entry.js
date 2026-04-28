@@ -67,8 +67,8 @@ frappe.ui.form.CustomerQuickEntryForm = class CustomerQuickEntryForm extends fra
 		},
 		{
 			label: __("Block"),
-			fieldname: "block",
-			fieldtype: "Data"
+			fieldname: "block_no",
+			fieldtype: "Int"
 		},
 		{
 			fieldtype: "Column Break"

@@ -6,6 +6,8 @@ from collections import defaultdict
 import frappe
 from frappe import _
 from frappe.utils import cint, getdate, get_time
+from frappe.utils.data import strip_html
+from service_appointment.service_appointment import dispatch
 
 
 @frappe.whitelist()
@@ -38,6 +40,9 @@ def get_daily_appointments(date=None, team=None, appointment_status="Scheduled")
 			"location",
 			"appointment_status",
 			"required_members",
+			"assignment_locked",
+			"assignment_state",
+			"assignment_note",
 			"modified",
 		],
 		order_by="time asc, modified desc",
@@ -67,6 +72,7 @@ def get_daily_appointments(date=None, team=None, appointment_status="Scheduled")
 		row.assigned_members = members
 		row.assigned_count = len(members)
 		row.required_members = cint(row.required_members) or 1
+		row.assignment_locked = cint(row.assignment_locked)
 
 	return appointments
 
@@ -137,6 +143,8 @@ def get_member_daily_load(date=None, appointment=None, team=None):
 					"appointment": service.get("appointment"),
 					"team": service.get("team"),
 					"customer": service.get("customer"),
+					"location": service.get("location"),
+					"address_text": service.get("address_text"),
 					"slot_label": slot_label,
 					"conflict": service.get("conflict"),
 				}
@@ -234,6 +242,16 @@ def assign_appointment_members(appointment, required_members=1, assigned_members
 	for member in assigned_members:
 		doc.append("assigned_members", {"member_name": member})
 
+	doc.assignment_state = _derive_assignment_state(
+		required_members=required_members,
+		assigned_count=len(assigned_members),
+		locked=doc.assignment_locked,
+	)
+	doc.assignment_note = _compose_manual_assignment_note(
+		required_members=required_members,
+		assigned_count=len(assigned_members),
+		locked=doc.assignment_locked,
+	)
 	doc.save()
 
 	return {
@@ -241,8 +259,91 @@ def assign_appointment_members(appointment, required_members=1, assigned_members
 		"appointment": doc.name,
 		"required_members": doc.required_members,
 		"assigned_count": len(assigned_members),
+		"assignment_state": doc.assignment_state,
+		"assignment_locked": cint(doc.assignment_locked),
+		"assignment_note": doc.assignment_note,
 		"modified": str(doc.modified),
 	}
+
+
+@frappe.whitelist()
+def auto_assign_day(date=None, team=None, assignment_state=None, force_recalculate=0):
+	_ensure_workstation_access(require_write=True)
+	return dispatch.auto_assign_day(
+		date=date,
+		team=team,
+		assignment_state=assignment_state,
+		force_recalculate=force_recalculate,
+	)
+
+
+@frappe.whitelist()
+def set_assignment_lock(appointment, locked=1):
+	_ensure_workstation_access(require_write=True)
+	return dispatch.set_assignment_lock(appointment=appointment, locked=locked)
+
+
+@frappe.whitelist()
+def get_best_slots(appointment=None, date=None, context_payload=None, limit=5, preferred_time=None):
+	_ensure_workstation_access(require_write=False)
+	return dispatch.get_best_slots(
+		appointment=appointment,
+		date=date,
+		context_payload=context_payload,
+		limit=limit,
+		preferred_time=preferred_time,
+	)
+
+
+@frappe.whitelist()
+def apply_slot_and_auto_dispatch(appointment, slot_payload, expected_modified=None, force_recalculate=0):
+	_ensure_workstation_access(require_write=True)
+	return dispatch.apply_slot_and_auto_dispatch(
+		appointment=appointment,
+		slot_payload=slot_payload,
+		expected_modified=expected_modified,
+		force_recalculate=force_recalculate,
+	)
+
+
+@frappe.whitelist()
+def auto_dispatch_apply(appointment, force_recalculate=0, source="workstation"):
+	_ensure_workstation_access(require_write=True)
+	return dispatch.auto_dispatch_apply(
+		appointment=appointment,
+		force_recalculate=force_recalculate,
+		source=source,
+	)
+
+
+@frappe.whitelist()
+def apply_best_slot_for_appointment(appointment, date=None, force_recalculate=0):
+	_ensure_workstation_access(require_write=True)
+	best = dispatch.get_best_slots(appointment=appointment, date=date, limit=1)
+	slots = best.get("slots") or []
+	if not slots:
+		return {
+			"status": "error",
+			"appointment": appointment,
+			"message": _("No best slot was found for this appointment/day."),
+		}
+	doc = frappe.get_value("Service Appointment", appointment, ["modified"], as_dict=1)
+	return dispatch.apply_slot_and_auto_dispatch(
+		appointment=appointment,
+		slot_payload=slots[0],
+		expected_modified=doc.modified if doc else None,
+		force_recalculate=force_recalculate,
+	)
+
+
+@frappe.whitelist()
+def restore_assignment(appointment, snapshot_payload, expected_modified=None):
+	_ensure_workstation_access(require_write=True)
+	return dispatch.restore_assignment(
+		appointment=appointment,
+		snapshot_payload=snapshot_payload,
+		expected_modified=expected_modified,
+	)
 
 
 def _parse_assigned_members(assigned_members):
@@ -327,7 +428,7 @@ def _get_member_services_on_date(date):
 			"docstatus": ["<", 2],
 			"appointment_status": ["!=", "Cancelled"],
 		},
-		fields=["name", "time", "duration", "team", "customer"],
+		fields=["name", "time", "duration", "team", "customer", "location", "address_display", "customer_address"],
 		order_by="time asc, modified desc",
 		limit_page_length=0,
 	)
@@ -364,6 +465,8 @@ def _get_member_services_on_date(date):
 					"appointment": appt.name,
 					"team": appt.team,
 					"customer": appt.customer,
+					"location": appt.location,
+					"address_text": _clean_address(appt.address_display or appt.customer_address or ""),
 					"start_minutes": start,
 					"end_minutes": end,
 					"sort_minutes": start,
@@ -386,6 +489,12 @@ def _get_assigned_members_for_appointment(appointment):
 		order_by="idx asc",
 	)
 	return [row for row in rows if row]
+
+
+def _clean_address(value):
+	if not value:
+		return ""
+	return " ".join(strip_html(value).split())
 
 
 def _get_employee_name_map(employee_ids):
@@ -447,3 +556,23 @@ def _get_slot_status(target_start, target_end, has_conflict):
 	if target_start is None or target_end is None:
 		return "unknown"
 	return "busy" if has_conflict else "available"
+
+
+def _derive_assignment_state(required_members, assigned_count, locked=0):
+	if cint(locked):
+		return "Manual Locked"
+	required_members = max(1, cint(required_members) or 1)
+	assigned_count = max(0, cint(assigned_count))
+	if assigned_count <= 0:
+		return "Unassigned"
+	if assigned_count < required_members:
+		return "Under Assigned"
+	return "Assigned"
+
+
+def _compose_manual_assignment_note(required_members, assigned_count, locked=0):
+	shortage = max(0, cint(required_members) - cint(assigned_count))
+	base = _("Manual assignment update")
+	if cint(locked):
+		base = _("Manual assignment lock enabled")
+	return _("{0} | Shortage: {1}").format(base, shortage)

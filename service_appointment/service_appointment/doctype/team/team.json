@@ -13,7 +13,8 @@
   "column_break_4",
   "team_vehicle",
   "team_color",
-  "team_services"
+  "team_services",
+  "coverage_blocks"
  ],
  "fields": [
   {
@@ -58,6 +59,12 @@
    "fieldtype": "Table MultiSelect",
    "label": "Team Members",
    "options": "Team Member"
+  },
+  {
+   "fieldname": "coverage_blocks",
+   "fieldtype": "Table",
+   "label": "Coverage Blocks",
+   "options": "Team Coverage Block"
   }
  ],
  "links": [],

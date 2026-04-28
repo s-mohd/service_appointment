@@ -16,14 +16,15 @@ frappe.pages['service-assignment-workstation'].on_page_load = function (wrapper)
 };
 
 service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkstation {
-	constructor(page) {
-		this.page = page;
-		this.page_body = $(this.page.body);
-		this.raw_appointments = [];
-		this.appointments = [];
-		this.by_name = {};
-		this.selected_appointment = null;
-		this.member_board_data = null;
+		constructor(page) {
+			this.page = page;
+			this.page_body = $(this.page.body);
+			this.raw_appointments = [];
+			this.appointments = [];
+			this.by_name = {};
+			this.selected_appointment = null;
+			this.member_search = '';
+			this.member_board_data = null;
 		this.board_state_appointment = null;
 		this.board_required_members = 1;
 		this.board_selected_members = [];
@@ -46,18 +47,46 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		}
 
 		$('head').append(`
-			<style id="sa-assignment-workstation-style">
-					.sa-filter-panel {
-						display: flex;
-						align-items: center;
-						gap: 8px;
-						flex-wrap: wrap;
-						margin: 6px 0 8px;
-						overflow: visible;
-					}
-					.sa-filter-panel .form-control {
-						height: 30px;
-						font-size: 12px;
+				<style id="sa-assignment-workstation-style">
+						.sa-workstation-root {
+							display: flex;
+							flex-direction: column;
+							gap: 12px;
+						}
+						.sa-surface {
+							border: 1px solid var(--border-color);
+							border-radius: 12px;
+							background: var(--fg-color);
+							padding: 12px;
+						}
+						.sa-surface-table {
+							padding: 0;
+							overflow: hidden;
+						}
+						.sa-surface-table .sa-table-date-nav {
+							margin: 0;
+							padding: 10px 12px 8px;
+							border-bottom: 1px solid var(--border-color);
+							background: linear-gradient(180deg, rgba(10, 124, 255, 0.05), transparent);
+						}
+						.sa-surface-table .assignment-table-wrapper {
+							padding: 10px;
+						}
+						.sa-surface-board {
+							padding: 0;
+							overflow: hidden;
+						}
+						.sa-filter-panel {
+							display: flex;
+							align-items: center;
+							gap: 8px;
+							flex-wrap: wrap;
+							margin: 0;
+							overflow: visible;
+						}
+						.sa-filter-panel .form-control {
+							height: 30px;
+							font-size: 12px;
 						padding: 3px 8px;
 						width: auto;
 						min-width: 170px;
@@ -88,14 +117,20 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 						margin: 6px 0 8px;
 						padding: 6px 0;
 					}
-					.sa-table-date-nav-left {
-						display: inline-flex;
-						align-items: center;
-						gap: 10px;
-					}
-					.sa-table-date-nav .sa-date-btn {
-						width: 28px;
-						height: 28px;
+						.sa-table-date-nav-left {
+							display: inline-flex;
+							align-items: center;
+							gap: 10px;
+						}
+						.sa-date-label {
+							font-size: 34px;
+							line-height: 1.1;
+							font-weight: 700;
+							margin: 0;
+						}
+						.sa-table-date-nav .sa-date-btn {
+							width: 28px;
+							height: 28px;
 						border: 0;
 						border-radius: 8px;
 						background: var(--gray-100);
@@ -106,88 +141,158 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 					}
 					.sa-table-date-nav .sa-date-btn:hover { background: var(--gray-200); }
 					.sa-toolbar-note { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
-				.sa-kpi-grid {
-					display: grid;
-					grid-template-columns: repeat(4, minmax(120px, 1fr));
-					gap: 8px;
-					margin-bottom: 10px;
-				}
-				.sa-kpi-card {
-					border: 1px solid var(--border-color);
-					background: var(--fg-color);
-					border-radius: 8px;
-					padding: 10px;
-				}
-				.sa-kpi-label { font-size: 11px; color: var(--text-muted); }
-				.sa-kpi-value { font-size: 20px; font-weight: 700; line-height: 1.1; margin-top: 2px; }
+					.sa-kpi-grid {
+						display: grid;
+						grid-template-columns: repeat(4, minmax(120px, 1fr));
+						gap: 8px;
+					}
+					.sa-kpi-card {
+						border: 1px solid var(--border-color);
+						background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
+						border-radius: 10px;
+						padding: 12px;
+					}
+					.sa-kpi-label { font-size: 11px; color: var(--text-muted); }
+					.sa-kpi-value { font-size: 20px; font-weight: 700; line-height: 1.1; margin-top: 2px; }
 				.sa-kpi-warning { border-color: #e55353; background: rgba(229, 83, 83, 0.08); }
 				.sa-kpi-good { border-color: #2eae6d; background: rgba(46, 174, 109, 0.08); }
 				.sa-kpi-info { border-color: #0a7cff; background: rgba(10, 124, 255, 0.08); }
 
-				.sa-table-wrap {
-					border: 1px solid var(--border-color);
-					border-radius: 8px;
-					overflow: auto;
-					margin-bottom: 12px;
-				}
-				.sa-table-wrap table { margin-bottom: 0; }
-				.sa-table-wrap th,
-				.sa-table-wrap td {
-					padding: 7px 8px !important;
-					font-size: 12px;
-					vertical-align: top;
-				}
-				.sa-selected-row { background: rgba(10, 124, 255, 0.10); }
-				.sa-assign-chip { font-size: 11px; font-weight: 700; }
-				.sa-address {
-					max-width: 260px;
+					.sa-table-wrap {
+						border: 1px solid var(--border-color);
+						border-radius: 8px;
+						overflow: auto;
+						max-height: 420px;
+					}
+					.sa-appointments-table { margin-bottom: 0; }
+					.sa-appointments-table thead th {
+						position: sticky;
+						top: 0;
+						z-index: 2;
+						background: var(--subtle-fg);
+						font-weight: 700;
+					}
+					.sa-appointments-table tbody tr {
+						transition: background 0.15s ease;
+					}
+					.sa-appointments-table tbody tr:hover {
+						background: rgba(10, 124, 255, 0.08);
+					}
+					.sa-table-wrap th,
+					.sa-table-wrap td {
+						padding: 7px 8px !important;
+						font-size: 12px;
+						vertical-align: top;
+					}
+					.sa-selected-row { background: rgba(10, 124, 255, 0.14); }
+					.sa-assign-chip { font-size: 11px; font-weight: 700; }
+					.sa-address {
+						max-width: 260px;
 					white-space: nowrap;
 					overflow: hidden;
-					text-overflow: ellipsis;
-				}
-				.sa-location { color: #0a7cff; font-weight: 600; }
-				.sa-status-dot {
-					display: inline-block;
-					width: 8px;
-					height: 8px;
-					border-radius: 50%;
-					margin-right: 4px;
-				}
+						text-overflow: ellipsis;
+					}
+					.sa-location { color: #0a7cff; font-weight: 600; }
+					.sa-status-badge {
+						display: inline-flex;
+						align-items: center;
+						gap: 6px;
+						padding: 3px 8px;
+						border-radius: 999px;
+						font-size: 11px;
+						font-weight: 600;
+						border: 1px solid transparent;
+					}
+					.sa-status-badge-dot {
+						width: 7px;
+						height: 7px;
+						border-radius: 50%;
+						background: currentColor;
+					}
+					.sa-dispatch-actions {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 4px;
+						margin-bottom: 6px;
+					}
+					.sa-dispatch-meta {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 4px;
+					}
 
-				.sa-board {
-					border: 1px solid var(--border-color);
-					border-radius: 8px;
-					background: var(--fg-color);
-				}
-				.sa-board-head {
-					padding: 10px;
-					border-bottom: 1px solid var(--border-color);
-					display: flex;
-					justify-content: space-between;
+					.sa-board {
+						border: 0;
+						border-radius: 0;
+						background: transparent;
+					}
+					.sa-board-head {
+						padding: 12px;
+						border-bottom: 1px solid var(--border-color);
+						display: flex;
+						justify-content: space-between;
 					gap: 8px;
 					align-items: center;
-					flex-wrap: wrap;
-				}
-				.sa-board-list {
-					padding: 10px;
-					max-height: 480px;
-					overflow: auto;
-				}
-				.sa-member-card {
-					border: 1px solid var(--border-color);
-					border-radius: 8px;
-					padding: 8px;
-					margin-bottom: 8px;
-					background: var(--fg-color);
-				}
-				.sa-member-card.sa-in-team {
-					border-color: #0a7cff;
-					background: rgba(10, 124, 255, 0.07);
-				}
-				.sa-member-card.sa-other-team {
-					border-color: #f59f00;
-					background: rgba(245, 159, 0, 0.08);
-				}
+						flex-wrap: wrap;
+					}
+					.sa-board-list {
+						padding: 12px;
+						max-height: 480px;
+						overflow: auto;
+					}
+					.sa-board-tools {
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+						gap: 8px;
+						flex-wrap: wrap;
+						margin-bottom: 8px;
+					}
+					.sa-board-tools .sa-member-search {
+						max-width: 300px;
+						min-width: 200px;
+					}
+					.sa-context-legend {
+						display: inline-flex;
+						align-items: center;
+						gap: 8px;
+						flex-wrap: wrap;
+					}
+					.sa-legend-item {
+						display: inline-flex;
+						align-items: center;
+						gap: 5px;
+						font-size: 11px;
+						color: var(--text-muted);
+					}
+					.sa-legend-swatch {
+						width: 10px;
+						height: 10px;
+						border-radius: 3px;
+						border: 1px solid var(--border-color);
+					}
+					.sa-legend-selected-team { background: rgba(10, 124, 255, 0.14); border-color: #0a7cff; }
+					.sa-legend-other-team { background: rgba(245, 159, 0, 0.14); border-color: #f59f00; }
+					.sa-member-grid {
+						display: grid;
+						grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+						gap: 8px;
+					}
+					.sa-member-card {
+						border: 1px solid var(--border-color);
+						border-radius: 8px;
+						padding: 8px;
+						margin-bottom: 0;
+						background: var(--fg-color);
+					}
+					.sa-member-card.sa-in-team {
+						border-color: #70afff;
+						background: rgba(10, 124, 255, 0.07);
+					}
+					.sa-member-card.sa-other-team {
+						border-color: #ffcc74;
+						background: rgba(245, 159, 0, 0.08);
+					}
 				.sa-member-card.sa-busy {
 					border-color: #e55353;
 					background: rgba(229, 83, 83, 0.08);
@@ -265,13 +370,13 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 				}
 				.sa-slot-badge.sa-conflict { background: rgba(229, 83, 83, 0.24); color: #971c1c; }
 
-				.sa-selected-list {
-					border: 1px solid var(--border-color);
-					border-radius: 8px;
-					padding: 8px;
-					margin-bottom: 8px;
-					background: rgba(10, 124, 255, 0.05);
-				}
+					.sa-selected-list {
+						border: 1px solid var(--border-color);
+						border-radius: 8px;
+						padding: 8px;
+						margin-bottom: 8px;
+						background: rgba(10, 124, 255, 0.05);
+					}
 				.sa-selected-item {
 					display: flex;
 					justify-content: space-between;
@@ -289,18 +394,46 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 					margin: 8px 0 6px;
 				}
 				.sa-muted { color: var(--text-muted); font-size: 11px; }
+				.sa-load-line {
+					border: 1px solid var(--border-color);
+					border-radius: 6px;
+					padding: 6px;
+					margin-top: 5px;
+					font-size: 11px;
+					background: var(--gray-100);
+				}
+					.sa-load-line .sa-line-top {
+						font-weight: 700;
+						margin-bottom: 2px;
+					}
+					.sa-empty-state {
+						padding: 20px;
+						border: 1px dashed var(--border-color);
+						border-radius: 10px;
+						color: var(--text-muted);
+						text-align: center;
+						background: var(--subtle-fg);
+					}
 
-					@media (max-width: 1200px) {
-						.sa-kpi-grid { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
-					}
-					@media (max-width: 768px) {
-						.sa-kpi-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-						.sa-filter-panel { gap: 6px; }
-						.sa-filter-panel .form-control { min-width: 140px; }
-					}
-			</style>
-		`);
-	}
+						@media (max-width: 1200px) {
+							.sa-kpi-grid { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+						}
+						@media (max-width: 768px) {
+							.sa-kpi-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+							.sa-filter-panel { gap: 6px; }
+							.sa-filter-panel .form-control { min-width: 140px; }
+							.sa-date-label { font-size: 28px; }
+							.sa-board-tools .sa-member-search {
+								min-width: 100%;
+								max-width: 100%;
+							}
+							.sa-member-grid {
+								grid-template-columns: 1fr;
+							}
+						}
+				</style>
+			`);
+		}
 
 	make_filters() {
 		const initial_date = this.consume_assignment_target_date() || frappe.datetime.now_date();
@@ -309,11 +442,15 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			team: '',
 			appointment_status: 'Scheduled',
 			assignment_state: 'All',
+			member_view: 'selected',
 		};
 		this.team_options = [];
 	}
 
 	setup_navigation_actions() {
+		this.page.add_inner_button(__('Auto Assign Visible'), () => this.auto_assign_visible());
+		this.page.add_inner_button(__('Auto Dispatch (Selected)'), () => this.auto_dispatch_selected());
+		this.page.add_inner_button(__('Apply Best Slot (Selected)'), () => this.apply_best_slot_selected());
 		this.page.add_inner_button(__('Calendar'), () => this.go_to_calendar());
 		this.page.add_inner_button(__('Technician Services'), () => this.go_to_technician_services());
 	}
@@ -344,41 +481,51 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 	make_body() {
 		this.page.main.find('.sa-workstation-root').remove();
 
-		const root = $(`
-				<div class="sa-workstation-root service-assignment-workstation">
-					<div class="sa-filter-panel">
-						<div class="sa-filter-date-control"></div>
-						<select class="form-control input-xs sa-filter-team"></select>
-						<select class="form-control input-xs sa-filter-status">
-							<option value="Scheduled">${__('Scheduled')}</option>
-							<option value="In Progress">${__('In Progress')}</option>
-							<option value="Reschedule">${__('Reschedule')}</option>
-							<option value="Partially Completed">${__('Partially Completed')}</option>
-						<option value="Completed">${__('Completed')}</option>
-						<option value="All">${__('All Status')}</option>
-					</select>
-						<select class="form-control input-xs sa-filter-assignment">
-							<option value="All">${__('All Assignment')}</option>
-							<option value="Unassigned">${__('Unassigned')}</option>
-							<option value="Under Assigned">${__('Under Assigned')}</option>
-							<option value="Fully Assigned">${__('Fully Assigned')}</option>
-						</select>
-						<button type="button" class="btn btn-default btn-xs sa-filter-clear">${__('Clear')}</button>
-						<button type="button" class="btn btn-primary btn-xs sa-filter-apply">${__('Refresh')}</button>
-					</div>
-					<div class="sa-kpi-grid"></div>
-					<div class="sa-table-date-nav">
-						<div class="sa-table-date-nav-left">
-							<button type="button" class="sa-date-btn sa-table-date-prev" title="${this.escape_html(__('Previous Day'))}">‹</button>
-							<h2 class="sa-date-label m-0"></h2>
-							<button type="button" class="sa-date-btn sa-table-date-next" title="${this.escape_html(__('Next Day'))}">›</button>
+			const root = $(`
+					<div class="sa-workstation-root service-assignment-workstation">
+						<div class="sa-surface">
+							<div class="sa-filter-panel">
+								<div class="sa-filter-date-control"></div>
+								<select class="form-control input-xs sa-filter-team"></select>
+								<select class="form-control input-xs sa-filter-status">
+									<option value="Scheduled">${__('Scheduled')}</option>
+									<option value="In Progress">${__('In Progress')}</option>
+									<option value="Reschedule">${__('Reschedule')}</option>
+									<option value="Partially Completed">${__('Partially Completed')}</option>
+								<option value="Completed">${__('Completed')}</option>
+								<option value="All">${__('All Status')}</option>
+							</select>
+								<select class="form-control input-xs sa-filter-assignment">
+									<option value="All">${__('All Assignment')}</option>
+									<option value="Unassigned">${__('Unassigned')}</option>
+									<option value="Under Assigned">${__('Under Assigned')}</option>
+									<option value="Fully Assigned">${__('Fully Assigned')}</option>
+								</select>
+								<select class="form-control input-xs sa-filter-member-view">
+									<option value="selected">${__('Selected Appointment Availability')}</option>
+									<option value="all">${__('All Members Daily Load')}</option>
+								</select>
+								<button type="button" class="btn btn-default btn-xs sa-filter-clear">${__('Clear')}</button>
+								<button type="button" class="btn btn-primary btn-xs sa-filter-apply">${__('Refresh')}</button>
+							</div>
 						</div>
-						<button type="button" class="btn btn-default btn-xs sa-table-date-today">${__('Today')}</button>
+						<div class="sa-kpi-grid"></div>
+						<div class="sa-surface sa-surface-table">
+							<div class="sa-table-date-nav">
+								<div class="sa-table-date-nav-left">
+									<button type="button" class="sa-date-btn sa-table-date-prev" title="${this.escape_html(__('Previous Day'))}">‹</button>
+									<h2 class="sa-date-label"></h2>
+									<button type="button" class="sa-date-btn sa-table-date-next" title="${this.escape_html(__('Next Day'))}">›</button>
+								</div>
+								<button type="button" class="btn btn-default btn-xs sa-table-date-today">${__('Today')}</button>
+							</div>
+							<div class="assignment-table-wrapper"></div>
+						</div>
+						<div class="sa-surface sa-surface-board">
+							<div class="member-board-wrapper"></div>
+						</div>
 					</div>
-					<div class="assignment-table-wrapper"></div>
-					<div class="member-board-wrapper"></div>
-				</div>
-			`);
+				`);
 
 		root.appendTo(this.page.main);
 		this.root = root;
@@ -386,6 +533,7 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		this.team_select = root.find('.sa-filter-team');
 		this.status_select = root.find('.sa-filter-status');
 		this.assignment_select = root.find('.sa-filter-assignment');
+		this.member_view_select = root.find('.sa-filter-member-view');
 		this.kpi_wrapper = root.find('.sa-kpi-grid');
 		this.table_wrapper = root.find('.assignment-table-wrapper');
 		this.member_board_wrapper = root.find('.member-board-wrapper');
@@ -440,6 +588,16 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			this.filters.assignment_state = e.currentTarget.value || 'All';
 			this.apply_client_filters_and_render();
 		});
+		this.page.main.on('change', '.sa-filter-member-view', (e) => {
+			if (!this.can_leave_with_unsaved_assignment()) {
+				this.sync_filter_ui();
+				return;
+			}
+			this.flush_board_autosave();
+			this.filters.member_view = e.currentTarget.value || 'selected';
+			this.render_member_board();
+			this.refresh_member_board();
+		});
 
 		this.page_body.on('click', '.appointment-row', (event) => {
 			const appointment_name = $(event.currentTarget).data('name');
@@ -457,6 +615,19 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			const member = $(event.currentTarget).data('member');
 			this.toggle_board_member(member);
 		});
+		this.page_body.on('click', '.btn-row-auto-dispatch', (event) => {
+			const appointment = $(event.currentTarget).data('appointment');
+			this.auto_dispatch_row(appointment);
+		});
+		this.page_body.on('click', '.btn-row-best-slot', (event) => {
+			const appointment = $(event.currentTarget).data('appointment');
+			this.apply_best_slot_for_appointment(appointment);
+		});
+		this.page_body.on('click', '.btn-row-lock', (event) => {
+			const appointment = $(event.currentTarget).data('appointment');
+			const locked = cint_or_zero($(event.currentTarget).data('locked')) ? 0 : 1;
+			this.toggle_row_lock(appointment, locked);
+		});
 		this.page_body.on('click', '.btn-board-remove-member', (event) => {
 			const member = $(event.currentTarget).data('member');
 			this.remove_board_member(member);
@@ -464,12 +635,16 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		this.page_body.on('click', '.btn-board-autofill-team', () => this.autofill_board_team_members());
 		this.page_body.on('click', '.btn-board-clear-selection', () => this.clear_board_selection());
 		this.page_body.on('click', '.btn-board-required-minus', () => this.adjust_board_required(-1));
-		this.page_body.on('click', '.btn-board-required-plus', () => this.adjust_board_required(1));
-		this.page_body.on('change', '.sa-required-input', (event) => {
-			const value = cint_or_one($(event.currentTarget).val());
-			this.set_board_required_members(value);
-		});
-	}
+			this.page_body.on('click', '.btn-board-required-plus', () => this.adjust_board_required(1));
+			this.page_body.on('change', '.sa-required-input', (event) => {
+				const value = cint_or_one($(event.currentTarget).val());
+				this.set_board_required_members(value);
+			});
+			this.page_body.on('input', '.sa-member-search', (event) => {
+				this.member_search = (event.currentTarget.value || '').trim().toLowerCase();
+				this.render_member_board();
+			});
+		}
 
 	shift_day(days) {
 		if (!this.can_leave_with_unsaved_assignment()) return;
@@ -494,6 +669,7 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		this.filters.team = '';
 		this.filters.appointment_status = 'Scheduled';
 		this.filters.assignment_state = 'All';
+		this.filters.member_view = 'selected';
 		this.sync_filter_ui();
 		this.refresh();
 	}
@@ -507,6 +683,9 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		this.team_select.val(this.filters.team || '');
 		this.status_select.val(this.filters.appointment_status || 'Scheduled');
 		this.assignment_select.val(this.filters.assignment_state || 'All');
+		if (this.member_view_select) {
+			this.member_view_select.val(this.filters.member_view || 'selected');
+		}
 	}
 
 	render_team_options() {
@@ -614,12 +793,12 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 	render_appointments() {
 		if (!this.appointments.length) {
 			this.render_kpis({ total: 0, fully_assigned: 0, under_assigned: 0, unassigned: 0 });
-			this.table_wrapper.html(`
-				<div class="text-muted" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--fg-color);">
-					${__('No appointments were found.')}
-				</div>
-			`);
-			return;
+				this.table_wrapper.html(`
+					<div class="sa-empty-state">
+						${__('No appointments were found.')}
+					</div>
+				`);
+				return;
 		}
 
 		const stats = {
@@ -630,18 +809,19 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		};
 		this.render_kpis(stats);
 
-		let html = `
-			<div class="sa-table-wrap">
-				<table class="table table-bordered">
-					<thead>
-						<tr>
-							<th>${__('Appointment')}</th>
+			let html = `
+				<div class="sa-table-wrap">
+					<table class="table table-bordered sa-appointments-table">
+						<thead>
+							<tr>
+								<th>${__('Appointment')}</th>
 							<th>${__('Time')}</th>
 							<th>${__('Customer')}</th>
 							<th>${__('Team')}</th>
 							<th>${__('Address / Location')}</th>
 							<th>${__('Assigned')}</th>
 							<th>${__('Status')}</th>
+							<th>${__('Dispatch')}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -652,6 +832,8 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			const assigned_count = row.assigned_count || 0;
 			const members_text = (row.assigned_members || []).join(', ');
 			const row_cls = this.selected_appointment === row.name ? 'sa-selected-row' : '';
+			const lock_label = cint_or_zero(row.assignment_locked) ? __('Unlock') : __('Lock');
+			const dispatch_badges = this.render_dispatch_badges(row);
 
 			let state_color = '#2eae6d';
 			if (assigned_count === 0) state_color = '#e55353';
@@ -668,14 +850,22 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 					<td>${this.escape_html(row.customer || '')}</td>
 					<td>${this.escape_html(row.team || '')}</td>
 					<td>${location}${address_line}</td>
-					<td>
-						<div class="sa-assign-chip" style="color:${state_color};">${assigned_count}/${required}</div>
-						<div class="sa-muted" title="${this.escape_html(members_text)}">${this.escape_html(members_text || '-')}</div>
-					</td>
-					<td><span class="sa-status-dot" style="background:${state_color};"></span>${this.escape_html(row.appointment_status || '')}</td>
-				</tr>
-			`;
-		});
+						<td>
+							<div class="sa-assign-chip" style="color:${state_color};">${assigned_count}/${required}</div>
+							<div class="sa-muted" title="${this.escape_html(members_text)}">${this.escape_html(members_text || '-')}</div>
+						</td>
+							<td>${this.render_status_badge(row.appointment_status || '', state_color)}</td>
+								<td>
+									<div class="sa-dispatch-actions">
+										<button type="button" class="btn btn-xs btn-default btn-row-best-slot" data-appointment="${this.escape_html(row.name)}">${__('Best Slot')}</button>
+										<button type="button" class="btn btn-xs btn-primary btn-row-auto-dispatch" data-appointment="${this.escape_html(row.name)}">${__('Auto Dispatch')}</button>
+										<button type="button" class="btn btn-xs btn-default btn-row-lock" data-appointment="${this.escape_html(row.name)}" data-locked="${cint_or_zero(row.assignment_locked)}">${lock_label}</button>
+									</div>
+									<div class="sa-dispatch-meta">${dispatch_badges}</div>
+							</td>
+					</tr>
+				`;
+			});
 
 		html += '</tbody></table></div>';
 		this.table_wrapper.html(html);
@@ -689,13 +879,15 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		}
 
 		const selected_row = this.by_name[this.selected_appointment] || null;
-		const context_team = (selected_row && selected_row.team) || filters.team || '';
+		const is_all_view = this.is_all_members_view();
+		const context_team = is_all_view ? (filters.team || '') : ((selected_row && selected_row.team) || filters.team || '');
+		const context_appointment = is_all_view ? '' : this.selected_appointment;
 
 		frappe.call({
 			method: 'service_appointment.service_appointment.page.service_assignment_workstation.service_assignment_workstation.get_member_daily_load',
 			args: {
 				date: filters.date,
-				appointment: this.selected_appointment,
+				appointment: context_appointment,
 				team: context_team,
 			},
 			freeze: false,
@@ -706,10 +898,20 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		});
 	}
 
-	render_member_board() {
-		const data = this.member_board_data || { members: [] };
-		const members = data.members || [];
-		const selected_row = this.by_name[this.selected_appointment] || null;
+	is_all_members_view() {
+		return (this.filters.member_view || 'selected') === 'all';
+	}
+
+		render_member_board() {
+			const data = this.member_board_data || { members: [] };
+			const members = data.members || [];
+			const selected_row = this.by_name[this.selected_appointment] || null;
+			const all_view = this.is_all_members_view();
+
+		if (all_view) {
+			this.render_all_members_board(data, members);
+			return;
+		}
 
 		if (!this.appointments.length) {
 			this.reset_board_state();
@@ -724,13 +926,14 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 			return;
 		}
 
-		this.ensure_board_state_for_row(selected_row);
+			this.ensure_board_state_for_row(selected_row);
 
-		const available_count = members.filter((m) => m.slot_status === 'available').length;
-		const busy_count = members.filter((m) => m.slot_status === 'busy').length;
-		const required = cint_or_one(this.board_required_members);
-		const assigned = this.board_selected_members.length;
-		const missing = Math.max(required - assigned, 0);
+			const filtered_members = this.filter_members_by_query(members);
+			const available_count = members.filter((m) => m.slot_status === 'available').length;
+			const busy_count = members.filter((m) => m.slot_status === 'busy').length;
+			const required = cint_or_one(this.board_required_members);
+			const assigned = this.board_selected_members.length;
+			const missing = Math.max(required - assigned, 0);
 		const member_map = {};
 		members.forEach((m) => {
 			member_map[m.employee] = m;
@@ -784,20 +987,29 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 							<button type="button" class="btn btn-xs btn-default btn-board-clear-selection">${__('Clear')}</button>
 						</div>
 					</div>
-				<div class="sa-board-list">
-					<div class="sa-selected-list">
-						<div class="sa-group-title">${__('Selected Members')} (${assigned})</div>
-						${selected_rows || `<div class="sa-muted">${__('No members selected yet')}</div>`}
-					</div>
-		`;
+					<div class="sa-board-list">
+						<div class="sa-board-tools">
+							<input type="text" class="form-control input-xs sa-member-search" placeholder="${this.escape_html(__('Search member, code, team'))}" value="${this.escape_html(this.member_search || '')}">
+							<div class="sa-muted">${__('Showing {0} of {1}', [filtered_members.length, members.length])}</div>
+							<div class="sa-context-legend">
+								<span class="sa-legend-item"><span class="sa-legend-swatch sa-legend-selected-team"></span>${__('Selected Team')}</span>
+								<span class="sa-legend-item"><span class="sa-legend-swatch sa-legend-other-team"></span>${__('Other Teams')}</span>
+							</div>
+						</div>
+						<div class="sa-selected-list">
+							<div class="sa-group-title">${__('Selected Members')} (${assigned})</div>
+							${selected_rows || `<div class="sa-muted">${__('No members selected yet')}</div>`}
+						</div>
+			`;
 
-		if (!members.length) {
-			html += `<div class="text-muted">${__('No members found from Team Member master.')}</div>`;
-		} else {
-			members.forEach((member) => {
-				const is_selected = this.board_selected_members.includes(member.employee);
-				const cls = this.get_member_card_class(member, is_selected);
-				const teams = (member.teams || []).map((t) => `<span class="sa-team-badge">${this.escape_html(t.team_name || t.team)}</span>`).join('');
+			if (!filtered_members.length) {
+				html += `<div class="text-muted">${__('No members found from Team Member master.')}</div>`;
+			} else {
+				html += `<div class="sa-member-grid">`;
+				filtered_members.forEach((member) => {
+					const is_selected = this.board_selected_members.includes(member.employee);
+					const cls = this.get_member_card_class(member, is_selected);
+					const teams = (member.teams || []).map((t) => `<span class="sa-team-badge">${this.escape_html(t.team_name || t.team)}</span>`).join('');
 				const slots = (member.assigned_services || []).map((svc) => {
 					const bcls = svc.conflict ? 'sa-slot-badge sa-conflict' : 'sa-slot-badge';
 					return `<span class="${bcls}" title="${this.escape_html(svc.appointment || '')}">${this.escape_html(svc.slot_label || '--')} ${this.escape_html(svc.appointment || '')}</span>`;
@@ -817,14 +1029,102 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 						</div>
 						<div style="margin-top:5px;">${teams || `<span class="sa-muted">${__('No team')}</span>`}</div>
 						<div style="margin-top:5px;">${slots || `<span class="sa-muted">${__('No assigned services today')}</span>`}</div>
-					</div>
-				`;
-			});
+						</div>
+					`;
+				});
+				html += '</div>';
+			}
+
+			html += '</div></div>';
+			this.member_board_wrapper.html(html);
 		}
 
-		html += '</div></div>';
-		this.member_board_wrapper.html(html);
-	}
+		render_all_members_board(data, members) {
+			this.reset_board_state();
+			const filtered_members = this.filter_members_by_query(members);
+			const selected_team = data.selected_team || this.filters.team || '';
+			const total = members.length;
+			const no_service = members.filter((m) => !cint_or_zero(m.assigned_service_count)).length;
+
+		let html = `
+			<div class="sa-board">
+				<div class="sa-board-head">
+					<div>
+						<div style="font-weight:700;">${__('All Members Daily Load')}</div>
+						<div class="sa-muted">${__('Date: {0} | Members: {1} | No Services: {2}', [
+			this.escape_html(this.format_date_label(this.filters.date || frappe.datetime.now_date())),
+			total,
+			no_service,
+		])}</div>
+						</div>
+						<div class="sa-muted">${selected_team ? __('Selected Team Highlight: {0}', [this.escape_html(selected_team)]) : __('All Teams')}</div>
+					</div>
+					<div class="sa-board-list">
+						<div class="sa-board-tools">
+							<input type="text" class="form-control input-xs sa-member-search" placeholder="${this.escape_html(__('Search member, code, team'))}" value="${this.escape_html(this.member_search || '')}">
+							<div class="sa-muted">${__('Showing {0} of {1}', [filtered_members.length, total])}</div>
+							<div class="sa-context-legend">
+								<span class="sa-legend-item"><span class="sa-legend-swatch sa-legend-selected-team"></span>${__('Selected Team')}</span>
+								<span class="sa-legend-item"><span class="sa-legend-swatch sa-legend-other-team"></span>${__('Other Teams')}</span>
+							</div>
+						</div>
+			`;
+
+			if (!filtered_members.length) {
+				html += `<div class="text-muted">${__('No members found from Team Member master.')}</div>`;
+			} else {
+				html += `<div class="sa-member-grid">`;
+				filtered_members.forEach((member) => {
+					const teams = (member.teams || []).map((t) => `<span class="sa-team-badge">${this.escape_html(t.team_name || t.team)}</span>`).join('');
+					const services = member.assigned_services || [];
+					const service_rows = services.map((svc) => {
+					const location_text = (svc.location || svc.address_text || '').trim();
+					return `
+						<div class="sa-load-line">
+							<div class="sa-line-top">${this.escape_html(svc.slot_label || '--')} | ${this.escape_html(svc.appointment || '')}</div>
+							<div>${this.escape_html(svc.customer || '-')} · ${this.escape_html(svc.team || '-')}</div>
+							<div class="sa-muted">${this.escape_html(location_text || '-')}</div>
+						</div>
+					`;
+				}).join('');
+
+				html += `
+					<div class="sa-member-card ${member.in_selected_team ? 'sa-in-team' : 'sa-other-team'}">
+						<div class="sa-member-head">
+							<div>
+								<div style="font-weight:700; font-size:12px;">${this.escape_html(member.employee_name || member.employee)}</div>
+								<div class="sa-muted">${this.escape_html(member.employee)}</div>
+							</div>
+							<div class="sa-summary-pill">${__('Services: {0}', [cint_or_zero(member.assigned_service_count)])}</div>
+						</div>
+						<div style="margin-top:5px;">${teams || `<span class="sa-muted">${__('No team')}</span>`}</div>
+						<div style="margin-top:6px;">${service_rows || `<span class="sa-muted">${__('No assigned services today')}</span>`}</div>
+						</div>
+					`;
+				});
+				html += '</div>';
+			}
+
+			html += '</div></div>';
+			this.member_board_wrapper.html(html);
+		}
+
+		filter_members_by_query(members) {
+			const query = (this.member_search || '').trim().toLowerCase();
+			if (!query) return members || [];
+
+			return (members || []).filter((member) => {
+				const team_text = (member.teams || [])
+					.map((team) => `${team.team_name || ''} ${team.team || ''}`)
+					.join(' ');
+				const search_blob = [
+					member.employee || '',
+					member.employee_name || '',
+					team_text,
+				].join(' ').toLowerCase();
+				return search_blob.includes(query);
+			});
+		}
 
 	reset_board_state() {
 		if (this.board_autosave_timer) {
@@ -1148,10 +1448,228 @@ service_appointment.ServiceAssignmentWorkstation = class ServiceAssignmentWorkst
 		return cls.join(' ');
 	}
 
-	get_status_badge(slot_status) {
-		if (slot_status === 'busy') return `<span class="indicator red">${__('Busy')}</span>`;
-		if (slot_status === 'available') return `<span class="indicator green">${__('Available')}</span>`;
-		return `<span class="indicator orange">${__('Unknown')}</span>`;
+		get_status_badge(slot_status) {
+			if (slot_status === 'busy') return `<span class="indicator red">${__('Busy')}</span>`;
+			if (slot_status === 'available') return `<span class="indicator green">${__('Available')}</span>`;
+			return `<span class="indicator orange">${__('Unknown')}</span>`;
+		}
+
+		render_status_badge(status, color) {
+			const safe_status = this.escape_html(status || __('Unknown'));
+			const safe_color = this.escape_html(color || '#5e64ff');
+			return `<span class="sa-status-badge" style="color:${safe_color}; border-color:${safe_color}33; background:${safe_color}12;"><span class="sa-status-badge-dot"></span>${safe_status}</span>`;
+		}
+
+	render_dispatch_badges(row) {
+		const badges = [];
+		const note = (row.assignment_note || '').toString();
+		const coverageMatch = note.match(/Coverage:\s*([A-Za-z ]+)/i);
+		const fallbackMatch = note.match(/Fallback:\s*(Yes|No)/i);
+		if (cint_or_zero(row.assignment_locked)) {
+			badges.push(`<span class="sa-summary-pill sa-warn">${__('Locked')}</span>`);
+		}
+		if ((row.assignment_state || '') === 'Under Assigned') {
+			badges.push(`<span class="sa-summary-pill sa-warn">${__('Under Assigned')}</span>`);
+		}
+		if (coverageMatch && coverageMatch[1]) {
+			badges.push(`<span class="sa-summary-pill">${__('Coverage')}: ${this.escape_html(coverageMatch[1].trim())}</span>`);
+		}
+		if (fallbackMatch && (fallbackMatch[1] || '').toLowerCase() === 'yes') {
+			badges.push(`<span class="sa-summary-pill sa-warn">${__('Fallback')}</span>`);
+		}
+			return badges.length ? badges.join('') : `<span class="sa-muted">-</span>`;
+		}
+
+	auto_assign_visible(force_recalculate = 0) {
+		if (!this.appointments.length) {
+			frappe.msgprint(__('No visible appointments to auto-assign.'));
+			return;
+		}
+		if (!this.can_leave_with_unsaved_assignment()) return;
+		this.flush_board_autosave();
+
+		frappe.call({
+			method: 'service_appointment.service_appointment.page.service_assignment_workstation.service_assignment_workstation.auto_assign_day',
+			args: {
+				date: this.filters.date,
+				team: this.filters.team || '',
+				assignment_state: 'All',
+				force_recalculate: force_recalculate ? 1 : 0,
+			},
+			freeze: true,
+			freeze_message: __('Applying auto assignment...'),
+			callback: (r) => {
+				const msg = r.message || {};
+				const summary = __('Applied: {0}, Skipped Locked: {1}, Under Assigned: {2}, Errors: {3}', [
+					cint_or_zero(msg.applied),
+					cint_or_zero(msg.skipped_locked),
+					cint_or_zero(msg.under_assigned),
+					cint_or_zero(msg.errors),
+				]);
+				frappe.show_alert({ message: summary, indicator: 'green' }, 7);
+				this.refresh();
+			},
+		});
+	}
+
+	auto_dispatch_selected() {
+		if (!this.selected_appointment) {
+			frappe.msgprint(__('Select an appointment row first.'));
+			return;
+		}
+		this.auto_dispatch_row(this.selected_appointment);
+	}
+
+	auto_dispatch_row(appointment, force_recalculate = 0) {
+		if (!appointment) return;
+		if (!this.can_leave_with_unsaved_assignment()) return;
+		this.flush_board_autosave();
+
+		frappe.call({
+			method: 'service_appointment.service_appointment.page.service_assignment_workstation.service_assignment_workstation.auto_dispatch_apply',
+			args: {
+				appointment,
+				force_recalculate: force_recalculate ? 1 : 0,
+				source: 'workstation_row',
+			},
+			freeze: true,
+			freeze_message: __('Auto dispatching appointment...'),
+			callback: (r) => {
+				const out = r.message || {};
+				if (out.status === 'skipped') {
+					frappe.show_alert({ message: out.message || __('Assignment skipped (locked).'), indicator: 'orange' }, 7);
+					return;
+				}
+				if (out.status !== 'success') {
+					frappe.msgprint(out.message || __('Could not auto dispatch this appointment.'));
+					return;
+				}
+
+				const local = this.by_name[appointment] || (this.raw_appointments || []).find((row) => row.name === appointment);
+				if (local) {
+					local.team = out.team || local.team;
+					local.assignment_note = out.assignment_note || local.assignment_note;
+					local.assignment_state = out.assignment_state || local.assignment_state;
+					local.assignment_locked = cint_or_zero(out.assignment_locked);
+					if (out.expected_modified) {
+						local.modified = out.expected_modified;
+					}
+					if (Array.isArray(out.selected_members)) {
+						local.assigned_members = [...out.selected_members];
+						local.assigned_count = out.selected_members.length;
+					}
+					if (cint_or_zero(out.required_members)) {
+						local.required_members = cint_or_zero(out.required_members);
+					}
+				}
+
+				const warning = cint_or_zero(out.shortage_count) > 0 || cint_or_zero(out.is_fallback);
+				frappe.show_alert(
+					{
+						message: __('Auto dispatched {0}. Team: {1}, Assigned: {2}/{3}', [
+							appointment,
+							out.team || '-',
+							cint_or_zero(out.assigned_count),
+							cint_or_one(out.required_members),
+						]),
+						indicator: warning ? 'orange' : 'green',
+					},
+					8
+				);
+				this.apply_client_filters_and_render();
+			},
+		});
+	}
+
+	apply_best_slot_selected() {
+		if (!this.selected_appointment) {
+			frappe.msgprint(__('Select an appointment row first.'));
+			return;
+		}
+		this.apply_best_slot_for_appointment(this.selected_appointment);
+	}
+
+	apply_best_slot_for_appointment(appointment, force_recalculate = 0) {
+		if (!appointment) return;
+		if (!this.can_leave_with_unsaved_assignment()) return;
+		this.flush_board_autosave();
+
+		frappe.call({
+			method: 'service_appointment.service_appointment.page.service_assignment_workstation.service_assignment_workstation.apply_best_slot_for_appointment',
+			args: {
+				appointment,
+				date: this.filters.date,
+				force_recalculate: force_recalculate ? 1 : 0,
+			},
+			freeze: true,
+			freeze_message: __('Applying best slot and dispatch...'),
+			callback: (r) => {
+				const out = r.message || {};
+				if (out.status !== 'success') {
+					frappe.msgprint(out.message || __('Could not apply best slot.'));
+					return;
+				}
+
+				const local = this.by_name[appointment] || (this.raw_appointments || []).find((row) => row.name === appointment);
+				if (local) {
+					if (out.team) local.team = out.team;
+					if (out.slot_applied) {
+						local.date = out.slot_applied.date || local.date;
+						local.time = out.slot_applied.time || local.time;
+						local.duration = cint_or_zero(out.slot_applied.duration) || local.duration;
+					}
+					local.assignment_note = out.assignment_note || local.assignment_note;
+					local.assignment_state = out.assignment_state || local.assignment_state;
+					local.assignment_locked = cint_or_zero(out.assignment_locked);
+					if (out.expected_modified) {
+						local.modified = out.expected_modified;
+					}
+					if (Array.isArray(out.selected_members)) {
+						local.assigned_members = [...out.selected_members];
+						local.assigned_count = out.selected_members.length;
+					}
+					if (cint_or_zero(out.required_members)) {
+						local.required_members = cint_or_zero(out.required_members);
+					}
+				}
+
+				const warning = cint_or_zero(out.shortage_count) > 0 || cint_or_zero(out.is_fallback);
+				frappe.show_alert(
+					{
+						message: __('Best slot applied for {0}. Team: {1}, Assigned: {2}/{3}', [
+							appointment,
+							out.team || '-',
+							cint_or_zero(out.assigned_count),
+							cint_or_one(out.required_members),
+						]),
+						indicator: warning ? 'orange' : 'green',
+					},
+					8
+				);
+
+				this.apply_client_filters_and_render();
+			},
+		});
+	}
+
+	toggle_row_lock(appointment, locked, done) {
+		if (!appointment) return;
+		frappe.call({
+			method: 'service_appointment.service_appointment.page.service_assignment_workstation.service_assignment_workstation.set_assignment_lock',
+			args: { appointment, locked: locked ? 1 : 0 },
+			callback: (r) => {
+				const out = r.message || {};
+				if (out.status === 'success') {
+					const local = this.by_name[appointment] || {};
+					local.assignment_locked = out.assignment_locked;
+					local.assignment_state = out.assignment_state;
+					local.modified = out.expected_modified || local.modified;
+					this.render_appointments();
+					frappe.show_alert({ message: locked ? __('Assignment locked') : __('Assignment unlocked'), indicator: 'green' });
+					if (typeof done === 'function') done();
+				}
+			},
+		});
 	}
 
 	extract_address(address) {

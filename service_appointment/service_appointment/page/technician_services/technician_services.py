@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, cint, flt, getdate, get_time, nowtime
+from frappe.utils import add_days, cint, flt, getdate, get_time, nowtime, sanitize_html
 from frappe.utils.data import strip_html
 
 from service_appointment.service_appointment.doctype.service_appointment.service_appointment import (
@@ -47,6 +47,8 @@ def get_technician_services(date_from=None, days=7):
 		"customer_address",
 		"address_display",
 		"location",
+		"service_type",
+		"building_type",
 		"appointment_status",
 		"required_members",
 		"collect_amount",
@@ -54,6 +56,7 @@ def get_technician_services(date_from=None, days=7):
 		"mode_of_payment",
 		"received_amount",
 		"start_time",
+		"reached_time",
 		"end_time",
 		"actual_duration",
 		"completed_by",
@@ -103,7 +106,20 @@ def get_technician_services(date_from=None, days=7):
 			upcoming_rows.append(row)
 
 	all_rows = overdue_rows + today_rows + upcoming_rows
-	_assigned_map, _other_map, _material_map = _get_child_row_maps([row.name for row in all_rows])
+	child_maps = _get_child_row_maps([row.name for row in all_rows])
+	if len(child_maps) == 3:
+		_assigned_map, _other_map, _material_map = child_maps
+		_pest_map = defaultdict(list)
+	else:
+		_assigned_map, _other_map, _material_map, _pest_map = child_maps
+
+	pest_type_names = set()
+	for row in all_rows:
+		pest_type_names.update(_pest_map.get(row.name, []))
+	pest_type_info_map = _get_pest_type_info_map(pest_type_names)
+	for row in all_rows:
+		row._pest_types = _pest_map.get(row.name, [])
+		row._pest_type_info_map = pest_type_info_map
 
 	overdue = [_serialize_appointment_row(row, _assigned_map, _other_map, _material_map) for row in overdue_rows]
 	today = [_serialize_appointment_row(row, _assigned_map, _other_map, _material_map) for row in today_rows]
@@ -132,12 +148,14 @@ def start_service(appointment, started_at=None):
 	if doc.docstatus != 0:
 		frappe.throw(_("Only draft appointments can be started."))
 
-	if doc.appointment_status in ("Completed", "Cancelled"):
-		frappe.throw(_("Cannot start an appointment that is already completed/cancelled."))
+	if doc.appointment_status in ("Completed", "Cancelled", "Partially Completed"):
+		frappe.throw(_("Cannot start this appointment in its current status."))
 
 	started_time = _normalize_time(started_at) if started_at else _normalize_time(nowtime())
+	if not doc.reached_time:
+		frappe.throw(_("Please mark Reached before starting service."))
 	if not doc.start_time:
-		doc.start_time = started_time
+		doc.start_time = _normalize_time(doc.reached_time) or started_time
 
 	doc.appointment_status = "In Progress"
 	if not doc.completed_by:
@@ -149,7 +167,25 @@ def start_service(appointment, started_at=None):
 
 
 @frappe.whitelist()
-def report_could_not_start(appointment, reason, remarks):
+def mark_reached(appointment, reached_at=None):
+	ctx = _get_technician_context(require_write=True)
+	doc = _get_owned_appointment_doc(appointment, ctx.employee, require_write=True)
+
+	if doc.docstatus != 0:
+		frappe.throw(_("Only draft appointments can be updated."))
+
+	if doc.appointment_status in ("Completed", "Cancelled", "Partially Completed", "In Progress"):
+		frappe.throw(_("Cannot mark reached for this appointment in its current status."))
+
+	doc.reached_time = _normalize_time(reached_at) if reached_at else _normalize_time(nowtime())
+	if not doc.completed_by:
+		doc.completed_by = ctx.employee
+	doc.save()
+	return _action_response(doc)
+
+
+@frappe.whitelist()
+def report_could_not_start(appointment, reason, remarks, status="Reschedule"):
 	ctx = _get_technician_context(require_write=True)
 	doc = _get_owned_appointment_doc(appointment, ctx.employee, require_write=True)
 
@@ -163,10 +199,13 @@ def report_could_not_start(appointment, reason, remarks):
 	if doc.docstatus != 0:
 		frappe.throw(_("Only draft appointments can be updated."))
 
-	if doc.appointment_status in ("Completed", "Cancelled"):
-		frappe.throw(_("Cannot update a completed/cancelled appointment."))
+	if doc.appointment_status in ("Completed", "Cancelled", "Partially Completed"):
+		frappe.throw(_("Cannot update this appointment in its current status."))
 
-	doc.appointment_status = "Reschedule"
+	status = (status or "Reschedule").strip()
+	if status not in ("Reschedule", "Cancelled"):
+		frappe.throw(_("Invalid status for Could Not Start."))
+	doc.appointment_status = status
 	doc.reason_of_incompletion = reason
 	doc.remarks = remarks
 	doc.completed_by = ctx.employee
@@ -189,8 +228,8 @@ def complete_service_mobile(appointment, payload):
 		or payload.get("status")
 		or ("Completed" if doc.appointment_status in ("Scheduled", "In Progress") else doc.appointment_status)
 	)
-	if status == "In Progress":
-		frappe.throw(_("Please choose a final status to complete this appointment."))
+	if status in ("In Progress", "Reschedule", "Cancelled"):
+		frappe.throw(_("Please choose Completed or Partially Completed in this dialog."))
 
 	if status == "Completed" and not payload.get("customer_name"):
 		frappe.throw(_("Customer Name is mandatory for completed appointments."))
@@ -323,6 +362,19 @@ def _serialize_appointment_row(row, assigned_map, other_map, material_map):
 	assigned_members = assigned_map.get(row.name, [])
 	other_members = [{"employee": member} for member in other_map.get(row.name, [])]
 	used_materials = material_map.get(row.name, [])
+	pest_types = row.get("_pest_types") or []
+	pest_type_info_map = row.get("_pest_type_info_map") or {}
+	technician_instructions = ""
+	safety_measures = ""
+	for pest_name in pest_types:
+		pest_info = pest_type_info_map.get(pest_name) or {}
+		if not technician_instructions and pest_info.get("technician_instructions"):
+			technician_instructions = pest_info.get("technician_instructions")
+		if not safety_measures and pest_info.get("safety_measures"):
+			safety_measures = pest_info.get("safety_measures")
+		if technician_instructions and safety_measures:
+			break
+	has_safety_info = int(bool(_clean_address(technician_instructions) or _clean_address(safety_measures)))
 
 	return {
 		"name": row.name,
@@ -335,6 +387,9 @@ def _serialize_appointment_row(row, assigned_map, other_map, material_map):
 		"address_text": address_text,
 		"location": row.location,
 		"map_url": map_url,
+		"service_type": row.service_type,
+		"building_type": row.building_type,
+		"pest_types": pest_types,
 		"appointment_status": row.appointment_status,
 		"required_members": cint(row.required_members) or 1,
 		"assigned_members": assigned_members,
@@ -345,6 +400,7 @@ def _serialize_appointment_row(row, assigned_map, other_map, material_map):
 		"mode_of_payment": row.mode_of_payment,
 		"received_amount": row.received_amount,
 		"start_time": row.start_time,
+		"reached_time": row.reached_time,
 		"end_time": row.end_time,
 		"actual_duration": row.actual_duration,
 		"completed_by": row.completed_by,
@@ -357,12 +413,17 @@ def _serialize_appointment_row(row, assigned_map, other_map, material_map):
 		"reason_of_incompletion": row.reason_of_incompletion,
 		"other_members": other_members,
 		"used_materials": used_materials,
+		"has_safety_info": has_safety_info,
+		"is_pending_materials": 1 if row.appointment_status == "Partially Completed" else 0,
+		"technician_instructions": technician_instructions,
+		"safety_measures": safety_measures,
 		"docstatus": row.docstatus,
 		"modified": str(row.modified) if row.modified else None,
 		"status_color": _status_color(row.appointment_status),
-		"can_start": row.docstatus == 0 and row.appointment_status not in ("Completed", "Cancelled", "In Progress"),
+		"can_reach": row.docstatus == 0 and not bool(row.reached_time) and row.appointment_status not in ("Completed", "Cancelled", "In Progress", "Partially Completed"),
+		"can_start": row.docstatus == 0 and bool(row.reached_time) and row.appointment_status not in ("Completed", "Cancelled", "In Progress", "Partially Completed"),
 		"can_complete": row.docstatus == 0 and row.appointment_status not in ("Completed", "Cancelled"),
-		"can_report_no_start": row.docstatus == 0 and row.appointment_status not in ("Completed", "Cancelled"),
+		"can_report_no_start": row.docstatus == 0 and row.appointment_status not in ("Completed", "Cancelled", "Partially Completed"),
 	}
 
 
@@ -382,9 +443,10 @@ def _get_child_row_maps(appointment_names):
 	assigned_map = defaultdict(list)
 	other_map = defaultdict(list)
 	material_map = defaultdict(list)
+	pest_map = defaultdict(list)
 
 	if not appointment_names:
-		return assigned_map, other_map, material_map
+		return assigned_map, other_map, material_map, pest_map
 
 	assigned_rows = frappe.get_all(
 		"Team Member",
@@ -433,7 +495,21 @@ def _get_child_row_maps(appointment_names):
 			}
 		)
 
-	return assigned_map, other_map, material_map
+	pest_rows = frappe.get_all(
+		"Pest Type Item",
+		filters={
+			"parent": ["in", appointment_names],
+			"parenttype": "Service Appointment",
+			"parentfield": "pest_type",
+		},
+		fields=["parent", "pest_type", "idx"],
+		order_by="parent asc, idx asc",
+	)
+	for row in pest_rows:
+		if row.pest_type:
+			pest_map[row.parent].append(row.pest_type)
+
+	return assigned_map, other_map, material_map, pest_map
 
 
 def _clean_address(value):
@@ -477,6 +553,47 @@ def _parse_payload(payload):
 	frappe.throw(_("Payload format is invalid."))
 
 
+def _get_pest_type_info_map(pest_type_names):
+	names = [name for name in (pest_type_names or []) if name]
+	if not names:
+		return {}
+
+	has_instructions = frappe.db.has_column("Pest Type", "technician_instructions")
+	has_safety = frappe.db.has_column("Pest Type", "safety_measures")
+	if not has_instructions and not has_safety:
+		return {}
+
+	fields = ["name"]
+	if has_instructions:
+		fields.append("technician_instructions")
+	if has_safety:
+		fields.append("safety_measures")
+
+	rows = frappe.get_all(
+		"Pest Type",
+		filters={"name": ["in", names]},
+		fields=fields,
+		limit_page_length=max(len(names), 20),
+	)
+
+	out = {}
+	for row in rows:
+		instructions = _sanitize_rich_text(row.get("technician_instructions"))
+		safety = _sanitize_rich_text(row.get("safety_measures"))
+		out[row.name] = {
+			"technician_instructions": instructions,
+			"safety_measures": safety,
+		}
+	return out
+
+
+def _sanitize_rich_text(value):
+	html = (value or "").strip()
+	if not html:
+		return ""
+	return sanitize_html(html, linkify=False)
+
+
 def _get_reason_options():
 	if not frappe.db.exists("DocType", "Reason of Incompletion"):
 		return []
@@ -488,7 +605,10 @@ def _action_response(doc):
 		"status": "success",
 		"appointment": doc.name,
 		"appointment_status": doc.appointment_status,
+		"docstatus": doc.docstatus,
+		"is_pending_materials": 1 if doc.appointment_status == "Partially Completed" and doc.docstatus == 0 else 0,
 		"start_time": doc.start_time,
+		"reached_time": doc.reached_time,
 		"end_time": doc.end_time,
 		"actual_duration": doc.actual_duration,
 		"completed_by": doc.completed_by,

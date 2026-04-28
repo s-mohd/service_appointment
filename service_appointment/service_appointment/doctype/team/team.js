@@ -3,6 +3,9 @@
 
 frappe.ui.form.on('Team', {
 	refresh: function (frm) {
+		if (!cur_frm.fields_dict["time_working_schedule"]) {
+			return;
+		}
 		cur_frm.fields_dict["time_working_schedule"].grid.wrapper.find('.grid-add-row').hide();
 		cur_frm.fields_dict["time_working_schedule"].grid.add_custom_button(__('Add Time Slots'), () => {
 			let d = new frappe.ui.Dialog({

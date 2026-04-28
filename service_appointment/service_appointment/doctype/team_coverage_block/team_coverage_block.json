@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "creation": "2026-04-22 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "city",
+  "block_from",
+  "block_to",
+  "priority",
+  "active"
+ ],
+ "fields": [
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "City"
+  },
+  {
+   "fieldname": "block_from",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Block From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "block_to",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Block To"
+  },
+  {
+   "default": "10",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Priority"
+  },
+  {
+   "default": "1",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Active"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-22 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Service Appointment",
+ "name": "Team Coverage Block",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
+
